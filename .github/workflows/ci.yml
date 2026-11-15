@@ -34,6 +34,10 @@ jobs:
           ruff check .
           ruff format --check .
 
+      - name: Verify Documentation Metrics Parity
+        run: |
+          python scripts/render_metrics.py --check
+
       - name: Run Pytest with Coverage
         run: |
           pytest --cov=src --cov-report=term-missing --cov-fail-under=80
