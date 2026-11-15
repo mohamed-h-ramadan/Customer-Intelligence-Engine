@@ -87,7 +87,10 @@ known-first-party = ["cie", "src"]
 minversion = "8.0"
 testpaths = ["tests"]
 pythonpath = [".", "src"]
-addopts = "-v --strict-markers"
+addopts = "-v --strict-markers -rs"
+markers = [
+    "requires_pipeline_data: tests that require large raw or intermediate pipeline datasets",
+]
 
 [tool.coverage.run]
 source = ["src/cie", "src"]

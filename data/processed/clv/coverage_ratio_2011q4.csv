@@ -1,0 +1,5 @@
+cohort,cohort_pool_customers,target_active_customers,gross_spend_gbp,returns_gbp,net_spend_gbp,gross_share_pct,net_share_pct
+"Eligible (Model-Scored, Lookback Active)",3224,1884,2585609.91,-71359.06,2514250.85,80.96293459572894,80.87963380323701
+Out-of-Scope: Cold-Start (New Buyers),594,594,385089.91,-7166.34,377923.56999999995,12.058280360166604,12.157227647834743
+Out-of-Scope: Dormant-Reactivated,426,426,222872.55099999998,-5789.549999999999,217083.001,6.978785044104452,6.983230661247558
+Out-of-Scope: Returns-Only,6,6,0.0,-624.59,-624.59,0.0,-0.02009211231932717

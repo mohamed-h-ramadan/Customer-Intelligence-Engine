@@ -40,7 +40,14 @@ jobs:
 
       - name: Run Pytest with Coverage
         run: |
-          pytest --cov=src --cov-report=term-missing --cov-fail-under=80
+          pytest --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=80 -rs
+
+      - name: Upload Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 14
 
   docker-smoke:
     name: Build & Smoke Test Container
