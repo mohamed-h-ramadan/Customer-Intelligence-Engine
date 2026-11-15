@@ -58,17 +58,27 @@ def render_metrics_markdown() -> str:
     metrics_ci_path = clv_dir / "test_metrics_with_95ci.csv"
     cal_rr_ci_path = clv_dir / "calibrated_run_rate_test_metrics_with_95ci.csv"
     whale_path = clv_dir / "test_whale_sensitivity.csv"
+    whale_conc_path = clv_dir / "test_whale_concentration.csv"
     targeting_path = clv_dir / "targeting_simulation.csv"
     segments_path = clv_dir / "test_segment_error_slices.csv"
 
     # 1. Load persisted artifacts
-    for p in [preds_path, metrics_ci_path, cal_rr_ci_path, whale_path, targeting_path, segments_path]:
+    for p in [
+        preds_path,
+        metrics_ci_path,
+        cal_rr_ci_path,
+        whale_path,
+        whale_conc_path,
+        targeting_path,
+        segments_path,
+    ]:
         if not p.exists():
             raise FileNotFoundError(f"Missing required Phase 4b artifact: {p}")
 
     metrics_ci_df = pd.read_csv(metrics_ci_path)
     cal_rr_boot = pd.read_csv(cal_rr_ci_path).set_index("metric")
     whale_df = pd.read_csv(whale_path)
+    whale_conc_df = pd.read_csv(whale_conc_path).set_index("metric")
     targeting_df = pd.read_csv(targeting_path)
     segments_df = pd.read_csv(segments_path)
 
@@ -88,6 +98,7 @@ def render_metrics_markdown() -> str:
         "test_metrics_with_95ci.csv": compute_sha256(metrics_ci_path),
         "calibrated_run_rate_test_metrics_with_95ci.csv": compute_sha256(cal_rr_ci_path),
         "test_whale_sensitivity.csv": compute_sha256(whale_path),
+        "test_whale_concentration.csv": compute_sha256(whale_conc_path),
         "targeting_simulation.csv": compute_sha256(targeting_path),
     }
 
@@ -158,7 +169,7 @@ def render_metrics_markdown() -> str:
         f"  Multiplying heuristic run-rate by this ratio slashes revenue under-forecasting from `{rr_ci.loc['total_rev_error_pct', 'point_estimate']:.2f}%` down to `{cal_rr_boot.loc['total_rev_error_pct', 'point_estimate']:.2f}%`."
     )
     md.append(
-        f"- **Whale Sensitivity**: Excluding the top-5 accounts drops Tweedie RMSE from `£{champ_ci.loc['rmse', 'point_estimate']:,.2f}` to `£{champ_ci.loc['rmse_excl_top5', 'point_estimate']:,.2f}`."
+        f"- **Whale Concentration & Sensitivity**: Just 5 customer accounts generate `{whale_conc_df.loc['top_5_spend_share_pct', 'value']:.2f}%` of total holdout spend and `{whale_conc_df.loc['tweedie_top_5_squared_error_share_pct', 'value']:.2f}%` of Tweedie squared error. Excluding these 5 accounts drops Tweedie RMSE from `£{champ_ci.loc['rmse', 'point_estimate']:,.2f}` down to `£{champ_ci.loc['rmse_excl_top5', 'point_estimate']:,.2f}`."
     )
     md.append("")
     md.append("---")

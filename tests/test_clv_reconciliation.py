@@ -248,3 +248,31 @@ def test_calibrated_run_rate_persisted_metrics_exact_parity(clv_artifacts):
         assert abs_diff <= 1e-6, (
             f"Calibrated Run-Rate {metric_name} diverged! Computed: {computed_val}, Persisted: {persisted_val}"
         )
+
+
+def test_whale_concentration_exact_parity(clv_artifacts):
+    """Verify whale spend share (17.26%) and squared error share (84.06%) reproduce within 1e-6."""
+    root = get_project_root()
+    conc_path = root / "data" / "processed" / "clv" / "test_whale_concentration.csv"
+    assert conc_path.exists(), f"Persisted artifact {conc_path} must exist"
+
+    conc_df = pd.read_csv(conc_path).set_index("metric")
+    preds_df = clv_artifacts["preds"]
+
+    total_actual = float(preds_df["target"].sum())
+    top_5_idx = preds_df["target"].nlargest(5).index
+    top_5_spend = float(preds_df.loc[top_5_idx, "target"].sum())
+    top_5_share = float(top_5_spend / total_actual * 100)
+
+    se_all = (preds_df["pred_frozen_tweedie"] - preds_df["target"]) ** 2
+    se_top_5 = float(se_all.loc[top_5_idx].sum())
+    se_share = float(se_top_5 / se_all.sum() * 100)
+
+    assert abs(total_actual - float(conc_df.loc["total_actual_spend_gbp", "value"])) <= 1e-4
+    assert abs(top_5_spend - float(conc_df.loc["top_5_actual_spend_gbp", "value"])) <= 1e-4
+    assert abs(top_5_share - float(conc_df.loc["top_5_spend_share_pct", "value"])) <= 1e-6
+    assert (
+        abs(se_share - float(conc_df.loc["tweedie_top_5_squared_error_share_pct", "value"])) <= 1e-6
+    )
+    assert np.isclose(top_5_share, 17.262723, atol=1e-4)
+    assert np.isclose(se_share, 84.064341, atol=1e-4)

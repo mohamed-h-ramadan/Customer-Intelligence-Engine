@@ -1,0 +1,9 @@
+metric,value,unit,description
+total_actual_spend_gbp,2585609.91,GBP,Total gross actual spending across holdout test cohort (n=3224)
+top_5_actual_spend_gbp,446346.68,GBP,Total spending by top-5 actual whale accounts
+top_5_spend_share_pct,17.262723130574635,percent,Share of holdout revenue concentrated in top-5 accounts
+tweedie_total_sum_squared_error,31134217310.18753,GBP^2,Total Tweedie GLM sum of squared prediction errors
+tweedie_top_5_sum_squared_error,26172774599.987072,GBP^2,Tweedie GLM sum of squared errors from top-5 whale accounts
+tweedie_top_5_squared_error_share_pct,84.06434097645676,percent,Percentage of Tweedie squared error attributable to top-5 accounts
+tweedie_rmse_all_gbp,3107.5738598982934,GBP,"Tweedie GLM holdout RMSE on all 3,224 customers"
+tweedie_rmse_excl_top5_gbp,1241.4907900817707,GBP,Tweedie GLM holdout RMSE excluding top-5 whale accounts
