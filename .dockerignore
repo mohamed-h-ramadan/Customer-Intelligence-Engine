@@ -1,0 +1,21 @@
+# ==============================================================================
+# Docker Build Context Exclusions
+# ==============================================================================
+data/raws/
+Notebooks/
+interview/
+reports/
+tests/
+docs/
+.venv/
+.git/
+.pytest_cache/
+*.pyc
+__pycache__/
+*.pdf
+.env
+.env.*
+mlruns/
+mlartifacts/
+mlflow.db*
+*.egg-info/
