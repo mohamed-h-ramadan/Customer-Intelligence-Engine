@@ -1,0 +1,161 @@
+# ==============================================================================
+# Customer Intelligence Engine (CIE) - Production Configuration
+# ==============================================================================
+
+pipeline:
+  seed: 42
+  cutoffs:
+    train_as_of: "2010-09-10"
+    test_as_of: "2011-09-10"
+    deploy_as_of: "2011-12-10"
+  windows:
+    lookback_days: 270
+    horizon_days: 90
+    recency_max_days: 270
+  paths:
+    raw_data: "data/raws/online_retail_II.xlsx"
+    sales_clean: "data/processed/sales_clean.parquet"
+    returns_clean: "data/processed/returns_clean.parquet"
+    admin_rows: "data/processed/admin_rows.parquet"
+    guest_transactions: "data/processed/guest_transactions.parquet"
+    features_train: "data/processed/features/features_train_2010-09-10.parquet"
+    features_test: "data/processed/features/features_test_2011-09-10.parquet"
+    rfm_snapshot_deploy: "data/processed/features/rfm_snapshot_2011-12-10.parquet"
+    segments_t_seg: "data/processed/segmentation/segments_t_seg_2011-09-10.parquet"
+    segments_deploy: "data/processed/segmentation/segments_deploy_2011-12-10.parquet"
+    segment_profiles: "data/processed/segmentation/segment_profiles.parquet"
+    clv_test_predictions: "data/processed/clv/test_predictions_2011-09-10.parquet"
+    clv_champion_model: "models/clv_tweedie_tuned_2010_09_10.joblib"
+    segmentation_pipeline: "models/rfm_kmeans_k5_pipeline.joblib"
+
+segmentation:
+  n_clusters: 5
+  recency_transform: "sqrt"
+  n_init: 20
+  random_state: 42
+  feature_cols:
+    - "recency_days"
+    - "frequency"
+    - "monetary"
+  cluster_to_segment:
+    0: "At-Risk Repeaters"
+    1: "VIP Champions"
+    2: "Hibernating / Lost"
+    3: "Promising Recent Buyers"
+    4: "Loyal Regulars"
+  crm_actions:
+    "VIP Champions": "Dedicated B2B account rep, priority inventory allocation, bespoke tier pricing"
+    "Loyal Regulars": "Cross-sell SKU breadth bundles, loyalty free-shipping threshold incentives"
+    "Promising Recent Buyers": "Day-60 onboarding nurture cadence targeting 2nd and 3rd repeat orders"
+    "At-Risk Repeaters": "#1 win-back priority: personalized restock outreach, catalog refresh sample kits"
+    "Hibernating / Lost": "Zero paid media spend; low-cost automated Q4 catalog mailer / re-engagement push"
+
+clv:
+  champion:
+    name: "tweedie_glm_tuned"
+    model_version: "v1.0-frozen-2010-09-10"
+    power: 1.65
+    alpha: 0.5
+    link: "log"
+    top_n_countries: 3
+    top_countries:
+      - "United Kingdom"
+      - "Germany"
+      - "France"
+  challengers:
+    run_rate:
+      name: "run_rate_heuristic"
+      model_version: "v1.0-run-rate"
+      lookback_days: 270
+      horizon_days: 90
+    calibrated_run_rate:
+      name: "calibrated_run_rate"
+      model_version: "v1.0-calibrated-run-rate"
+      lookback_days: 270
+      horizon_days: 90
+      # Empirical Q4 expansion factor on 2010-09-10 training set: sum(target) / sum(run_rate) = 1.427462
+      expansion_factor: 1.42746205196053
+    train_mean:
+      name: "train_mean_baseline"
+      model_version: "v1.0-train-mean"
+      value: 752.8095052664189
+    train_median:
+      name: "train_median_baseline"
+      model_version: "v1.0-train-median"
+      value: 222.08
+
+regime:
+  validated_lookback_days: 270
+  validated_horizon_days: 90
+  validated_cutoff_months:
+    - 9
+    - 10
+    - 11
+    - 12
+  feature_ranges:
+    recency_days:
+      min: 0.16
+      max: 269.56
+    frequency:
+      min: 1.0
+      max: 100.0
+    monetary:
+      min: 1.55
+      max: 237264.43
+    aov:
+      min: 1.55
+      max: 10877.18
+    avg_items_per_invoice:
+      min: 1.0
+      max: 44119.2
+    avg_unit_price:
+      min: 0.13
+      max: 295.0
+    n_unique_products:
+      min: 1.0
+      max: 1295.0
+    n_active_months:
+      min: 1.0
+      max: 10.0
+    n_active_weeks:
+      min: 1.0
+      max: 36.0
+    tenure_days_in_window:
+      min: 0.17
+      max: 269.64
+    mean_interpurchase_days:
+      min: 0.00069
+      max: 255.05
+    spend_last_30d:
+      min: 0.0
+      max: 18534.44
+    spend_last_60d:
+      min: 0.0
+      max: 99125.7
+    spend_last_90d:
+      min: 0.0
+      max: 103579.5
+    invoices_last_30d:
+      min: 0.0
+      max: 15.0
+    invoices_last_60d:
+      min: 0.0
+      max: 29.0
+    invoices_last_90d:
+      min: 0.0
+      max: 45.0
+    spend_last_90d_ratio:
+      min: 0.0
+      max: 1.0
+    return_invoice_count:
+      min: 0.0
+      max: 26.0
+    return_value_abs:
+      min: 0.0
+      max: 12176.42
+    return_value_ratio:
+      min: 0.0
+      max: 1.04
+    return_rate:
+      min: 0.0
+      max: 0.84
