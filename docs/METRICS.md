@@ -74,5 +74,5 @@ Validated regime: `270d lookback`, `90d forward horizon`, Q4 Season (`Sep 10 –
 | `test_whale_concentration.csv` | `71bf751dcdefaf08ae748d3edcb48b5f0555da8f4c619f404ac0e6ef68faed78` |
 | `targeting_simulation.csv` | `9ffbd33824c2a4ad9a68844454d61c93fb92d2a6c7e24f8b5b4e25c7ab651785` |
 
-- **One-Shot Test Evaluation Count**: `1` (LOCKED)
+- **Holdout Evaluation Provenance**: Champion evaluated once on holdout (as-of 2011-09-10); challengers and benchmarks evaluated afterwards on the same test set as reference (evaluation_counter = 2). Promotion decisions use train out-of-fold results only.
 - **Tweedie Frozen Checksum**: Verified against `models/clv_tweedie_tuned_2010_09_10.joblib`

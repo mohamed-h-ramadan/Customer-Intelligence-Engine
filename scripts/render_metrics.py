@@ -234,7 +234,11 @@ def render_metrics_markdown() -> str:
     for name, sha in hashes.items():
         md.append(f"| `{name}` | `{sha}` |")
     md.append("")
-    md.append("- **One-Shot Test Evaluation Count**: `1` (LOCKED)")
+    md.append(
+        "- **Holdout Evaluation Provenance**: Champion evaluated once on holdout (as-of 2011-09-10); "
+        "challengers and benchmarks evaluated afterwards on the same test set as reference (evaluation_counter = 2). "
+        "Promotion decisions use train out-of-fold results only."
+    )
     md.append(
         "- **Tweedie Frozen Checksum**: Verified against `models/clv_tweedie_tuned_2010_09_10.joblib`"
     )
@@ -263,8 +267,9 @@ def main() -> None:
         if not out_path.is_file():
             print(f"[CHECK FAILED] {out_path} does not exist.")
             sys.exit(1)
-        committed = out_path.read_text(encoding="utf-8")
-        if committed != rendered:
+        committed = out_path.read_text(encoding="utf-8").replace("\r\n", "\n")
+        rendered_norm = rendered.replace("\r\n", "\n")
+        if committed != rendered_norm:
             print("[CHECK FAILED] docs/METRICS.md diverges from persisted artifacts!")
             print("Run `python scripts/render_metrics.py` to regenerate.")
             sys.exit(1)
