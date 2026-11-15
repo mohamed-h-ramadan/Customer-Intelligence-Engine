@@ -6,10 +6,11 @@ Fits the champion Tweedie GLM on the frozen 2010-09-10 training features.
 import joblib
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import TweedieRegressor
 from sklearn.pipeline import Pipeline
 
 from cie.config import AppConfig, get_project_root, load_config
-from src.clv import build_candidate_models
+from src.clv import build_linear_clv_preprocessor
 from src.features import FEATURE_COLUMNS
 
 
@@ -29,9 +30,14 @@ def run_train_stage(config: AppConfig | None = None) -> Pipeline:
     X_train = train_df[FEATURE_COLUMNS]
     y_train = train_df["target"].to_numpy(dtype=float)
 
-    # Instantiate candidate dictionary and pick the frozen champion
-    candidates = build_candidate_models()
-    champion_pipeline = candidates["B: Tweedie GLM (Tuned)"]
+    # Instantiate tuned champion pipeline (power=1.65, alpha=0.5, top_n_countries=3)
+    prep = build_linear_clv_preprocessor(top_n_countries=3)
+    champion_pipeline = Pipeline(
+        [
+            ("prep", prep),
+            ("model", TweedieRegressor(power=1.65, alpha=0.5, link="log", max_iter=1000)),
+        ]
+    )
 
     champion_pipeline.fit(X_train, y_train)
 

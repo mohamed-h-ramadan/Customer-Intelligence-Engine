@@ -92,8 +92,8 @@ def run_evaluate_stage(config: AppConfig | None = None) -> dict[str, pd.DataFram
     # 3. Whale sensitivity slices
     whale_slices = evaluate_whale_sensitivity_slices(
         y_true=y_test_gross,
-        pred_champion=pred_tweedie,
-        pred_baseline=pred_run_rate,
+        y_pred=pred_tweedie,
+        exclude_top_ks=(0, 1, 5),
     )
     whale_slices.to_parquet(clv_dir / "test_whale_sensitivity.parquet")
     whale_slices.to_csv(clv_dir / "test_whale_sensitivity.csv")
@@ -101,10 +101,11 @@ def run_evaluate_stage(config: AppConfig | None = None) -> dict[str, pd.DataFram
     # 4. Targeting simulation
     targeting = compute_targeting_simulation(
         y_true=y_test_gross,
-        pred_champion=pred_tweedie,
-        pred_baseline=pred_run_rate,
-        fractions=[0.1, 0.2, 0.3],
-        random_state=config.pipeline.seed,
+        pred_map={
+            "Champion (Tweedie)": pred_tweedie,
+            "Baseline (Run Rate)": pred_run_rate,
+        },
+        top_fracs=[0.1, 0.2, 0.3],
     )
     targeting.to_parquet(clv_dir / "targeting_simulation.parquet")
     targeting.to_csv(clv_dir / "targeting_simulation.csv")
