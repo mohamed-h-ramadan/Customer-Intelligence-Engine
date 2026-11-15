@@ -24,7 +24,7 @@ Validated regime: `270d lookback`, `90d forward horizon`, Q4 Season (`Sep 10 –
 ### Key Takeaways:
 - **Calibration Lift**: The train-learned ratio of 90-day target to run-rate is `1.42746205`.
   Multiplying heuristic run-rate by this ratio slashes revenue under-forecasting from `-37.38%` down to `-10.61%`.
-- **Whale Sensitivity**: Excluding the top-5 accounts drops Tweedie RMSE from `£3,107.57` to `£1,241.49`.
+- **Whale Concentration & Sensitivity**: Just 5 customer accounts generate `17.26%` of total holdout spend and `84.06%` of Tweedie squared error. Excluding these 5 accounts drops Tweedie RMSE from `£3,107.57` down to `£1,241.49`.
 
 ---
 
@@ -71,6 +71,7 @@ Validated regime: `270d lookback`, `90d forward horizon`, Q4 Season (`Sep 10 –
 | `test_metrics_with_95ci.csv` | `9df3f2144f80837de59b8a0847a47b8e010644c1cce534ca32243d516d8bd05d` |
 | `calibrated_run_rate_test_metrics_with_95ci.csv` | `797ce1143c26a3eea5bea4b07ef643a83c86992036ff4dd617a9a366c52a1985` |
 | `test_whale_sensitivity.csv` | `06bbf877ed04c6c70794a6be6bdb5dd0023ebc9c753491fa426b627c78585dcd` |
+| `test_whale_concentration.csv` | `71bf751dcdefaf08ae748d3edcb48b5f0555da8f4c619f404ac0e6ef68faed78` |
 | `targeting_simulation.csv` | `9ffbd33824c2a4ad9a68844454d61c93fb92d2a6c7e24f8b5b4e25c7ab651785` |
 
 - **One-Shot Test Evaluation Count**: `1` (LOCKED)
