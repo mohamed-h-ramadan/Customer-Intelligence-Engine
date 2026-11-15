@@ -221,3 +221,30 @@ def test_golden_segment_assignments_full_history_vs_270d(clv_artifacts):
 
     assert window_matches == 1770
     assert np.isclose(match_pct, 54.900744, atol=1e-3)
+
+
+def test_calibrated_run_rate_persisted_metrics_exact_parity(clv_artifacts):
+    """Verify Calibrated Run-Rate reproduces persisted artifact metrics within 1e-6."""
+    config = load_config()
+    root = get_project_root()
+    cal_metrics_path = (
+        root / "data" / "processed" / "clv" / "calibrated_run_rate_test_metrics_with_95ci.csv"
+    )
+    assert cal_metrics_path.exists(), f"Persisted artifact {cal_metrics_path} must exist"
+
+    cal_metrics_df = pd.read_csv(cal_metrics_path).set_index("metric")
+    preds_df = clv_artifacts["preds"]
+
+    y_true = preds_df["target"].to_numpy(dtype=float)
+    ratio = config.clv.challengers.calibrated_run_rate.expansion_factor
+    y_cal = preds_df["pred_run_rate"].to_numpy(dtype=float) * ratio
+
+    eval_results = evaluate_clv_predictions(y_true, y_cal)
+
+    for metric_name, computed_val in eval_results.items():
+        assert metric_name in cal_metrics_df.index
+        persisted_val = float(cal_metrics_df.loc[metric_name, "point_estimate"])
+        abs_diff = abs(computed_val - persisted_val)
+        assert abs_diff <= 1e-6, (
+            f"Calibrated Run-Rate {metric_name} diverged! Computed: {computed_val}, Persisted: {persisted_val}"
+        )

@@ -21,7 +21,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from cie.config import load_config  # noqa: E402
-from src.clv import bootstrap_clv_metrics, evaluate_clv_predictions  # noqa: E402
 
 
 def compute_sha256(filepath: Path) -> str:
@@ -57,13 +56,18 @@ def render_metrics_markdown() -> str:
     # Artifact paths
     preds_path = clv_dir / "test_predictions_2011-09-10.parquet"
     metrics_ci_path = clv_dir / "test_metrics_with_95ci.csv"
+    cal_rr_ci_path = clv_dir / "calibrated_run_rate_test_metrics_with_95ci.csv"
     whale_path = clv_dir / "test_whale_sensitivity.csv"
     targeting_path = clv_dir / "targeting_simulation.csv"
     segments_path = clv_dir / "test_segment_error_slices.csv"
 
-    # 1. Load artifacts
-    preds_df = pd.read_parquet(preds_path)
+    # 1. Load persisted artifacts
+    for p in [preds_path, metrics_ci_path, cal_rr_ci_path, whale_path, targeting_path, segments_path]:
+        if not p.exists():
+            raise FileNotFoundError(f"Missing required Phase 4b artifact: {p}")
+
     metrics_ci_df = pd.read_csv(metrics_ci_path)
+    cal_rr_boot = pd.read_csv(cal_rr_ci_path).set_index("metric")
     whale_df = pd.read_csv(whale_path)
     targeting_df = pd.read_csv(targeting_path)
     segments_df = pd.read_csv(segments_path)
@@ -76,24 +80,13 @@ def render_metrics_markdown() -> str:
         metrics_ci_df["model"].str.startswith("Baseline (c): Run-Rate")
     ].set_index("metric")
 
-    # 3. Compute bootstrap CIs for Calibrated Run-Rate
     expansion_factor = config.clv.challengers.calibrated_run_rate.expansion_factor
-    cal_rr_preds = preds_df["pred_run_rate"] * expansion_factor
-    cal_rr_boot = bootstrap_clv_metrics(
-        y_true=preds_df["target"],
-        y_pred=cal_rr_preds,
-        ref_pred=preds_df["pred_run_rate"],
-        n_bootstrap=1000,
-        random_state=config.pipeline.seed,
-    )
 
-    # Also compute point estimates for calibrated run-rate
-    cal_rr_eval = evaluate_clv_predictions(preds_df["target"], cal_rr_preds)
-
-    # 4. Hashes for provenance
+    # 3. Hashes for provenance
     hashes = {
         "test_predictions_2011-09-10.parquet": compute_sha256(preds_path),
         "test_metrics_with_95ci.csv": compute_sha256(metrics_ci_path),
+        "calibrated_run_rate_test_metrics_with_95ci.csv": compute_sha256(cal_rr_ci_path),
         "test_whale_sensitivity.csv": compute_sha256(whale_path),
         "targeting_simulation.csv": compute_sha256(targeting_path),
     }
@@ -162,7 +155,7 @@ def render_metrics_markdown() -> str:
         f"- **Calibration Lift**: The train-learned ratio of 90-day target to run-rate is `{expansion_factor:.8f}`."
     )
     md.append(
-        f"  Multiplying heuristic run-rate by this ratio slashes revenue under-forecasting from `{rr_ci.loc['total_rev_error_pct', 'point_estimate']:.2f}%` down to `{cal_rr_eval['total_rev_error_pct']:.2f}%`."
+        f"  Multiplying heuristic run-rate by this ratio slashes revenue under-forecasting from `{rr_ci.loc['total_rev_error_pct', 'point_estimate']:.2f}%` down to `{cal_rr_boot.loc['total_rev_error_pct', 'point_estimate']:.2f}%`."
     )
     md.append(
         f"- **Whale Sensitivity**: Excluding the top-5 accounts drops Tweedie RMSE from `£{champ_ci.loc['rmse', 'point_estimate']:,.2f}` to `£{champ_ci.loc['rmse_excl_top5', 'point_estimate']:,.2f}`."

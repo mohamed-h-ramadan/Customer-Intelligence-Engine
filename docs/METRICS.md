@@ -69,6 +69,7 @@ Validated regime: `270d lookback`, `90d forward horizon`, Q4 Season (`Sep 10 –
 | :--- | :--- |
 | `test_predictions_2011-09-10.parquet` | `9ab27256ff23f9729e1e91677b7ce5565e58a2ac7b357e6076e6980c27732e28` |
 | `test_metrics_with_95ci.csv` | `9df3f2144f80837de59b8a0847a47b8e010644c1cce534ca32243d516d8bd05d` |
+| `calibrated_run_rate_test_metrics_with_95ci.csv` | `797ce1143c26a3eea5bea4b07ef643a83c86992036ff4dd617a9a366c52a1985` |
 | `test_whale_sensitivity.csv` | `06bbf877ed04c6c70794a6be6bdb5dd0023ebc9c753491fa426b627c78585dcd` |
 | `targeting_simulation.csv` | `9ffbd33824c2a4ad9a68844454d61c93fb92d2a6c7e24f8b5b4e25c7ab651785` |
 
