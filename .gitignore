@@ -99,6 +99,10 @@ models/*
 !models/clv_tweedie_tuned_2010_09_10.joblib
 !models/rfm_kmeans_k5_pipeline.joblib
 
+# Raw datasets: exclude large raw files, preserve directory
+data/raws/*
+!data/raws/.gitkeep
+
 # Processed datasets: exclude heavy pipeline intermediates, whitelist serving & test artifacts
 data/processed/*
 !data/processed/.gitkeep
