@@ -5,6 +5,7 @@ Verifies that serving/evaluation code reproduces the persisted Phase 4b artifact
 within tight numerical tolerances (<= 1e-6).
 """
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -150,3 +151,73 @@ def test_targeting_simulation_parity(clv_artifacts):
         assert row["model"] == persisted_row["model"]
         assert abs(row["capture_share_pct"] - persisted_row["capture_share_pct"]) <= 1e-6
         assert abs(row["actual_captured_gbp"] - persisted_row["actual_captured_gbp"]) <= 1e-6
+
+
+def test_golden_heuristic_run_rate_parity(clv_artifacts):
+    """(a) Assert heuristic run-rate challenger equals pred_run_rate within 1e-9."""
+    config = load_config()
+    root = get_project_root()
+    test_path = config.pipeline.paths.resolve("features_test", root)
+    test_df = pd.read_parquet(test_path)
+
+    preds_df = clv_artifacts["preds"]
+    calc_rr = test_df["monetary"].to_numpy(dtype=float) * (90.0 / 270.0)
+    saved_rr = preds_df["pred_run_rate"].to_numpy(dtype=float)
+
+    max_diff = float(np.max(np.abs(calc_rr - saved_rr)))
+    assert max_diff <= 1e-9, f"Heuristic run-rate diverged by {max_diff}"
+
+
+def test_golden_calibrated_run_rate_parity(clv_artifacts):
+    """(b) Assert calibrated run-rate equals heuristic * train-learned expansion constant within 1e-9."""
+    config = load_config()
+    root = get_project_root()
+    test_path = config.pipeline.paths.resolve("features_test", root)
+    test_df = pd.read_parquet(test_path)
+
+    constant = config.clv.challengers.calibrated_run_rate.expansion_factor
+    assert np.isclose(constant, 1.42746205196053)
+
+    calc_rr = test_df["monetary"].to_numpy(dtype=float) * (90.0 / 270.0)
+    calibrated_rr = calc_rr * constant
+
+    expected_cal_rr = calc_rr * 1.42746205196053
+    max_diff = float(np.max(np.abs(calibrated_rr - expected_cal_rr)))
+    assert max_diff <= 1e-9, f"Calibrated run-rate diverged by {max_diff}"
+
+
+def test_golden_segment_assignments_full_history_vs_270d(clv_artifacts):
+    """(c) Audit segment assignments: full-history matches 100%, 270d lookback matches 54.90%."""
+    import joblib
+
+    config = load_config()
+    root = get_project_root()
+
+    test_path = config.pipeline.paths.resolve("features_test", root)
+    test_df = pd.read_parquet(test_path)
+
+    seg_path = config.pipeline.paths.resolve("segments_t_seg", root)
+    seg_t_seg = pd.read_parquet(seg_path)
+
+    seg_pipeline_path = config.pipeline.paths.resolve("segmentation_pipeline", root)
+    seg_pipeline = joblib.load(seg_pipeline_path)
+
+    c_to_s = config.segmentation.cluster_to_segment
+    persisted_segments = seg_t_seg.loc[test_df.index, "segment"].tolist()
+
+    # 1. Full-history RFM features reproduce segments_t_seg exactly 100% (3,224 / 3,224)
+    rfm_full = seg_t_seg.loc[test_df.index, ["recency_days", "frequency", "monetary"]]
+    full_preds = seg_pipeline.predict(rfm_full)
+    full_pred_segs = [c_to_s[p] for p in full_preds]
+    full_matches = sum(p == t for p, t in zip(full_pred_segs, persisted_segments, strict=False))
+    assert full_matches == len(test_df) == 3224, "Full-history RFM must reproduce segments 100%"
+
+    # 2. 270d lookback features match only 54.90% because 270d truncates tenure
+    rfm_270d = test_df[["recency_days", "frequency", "monetary"]]
+    window_preds = seg_pipeline.predict(rfm_270d)
+    window_pred_segs = [c_to_s[p] for p in window_preds]
+    window_matches = sum(p == t for p, t in zip(window_pred_segs, persisted_segments, strict=False))
+    match_pct = window_matches / len(test_df) * 100.0
+
+    assert window_matches == 1770
+    assert np.isclose(match_pct, 54.900744, atol=1e-3)
