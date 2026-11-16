@@ -52,3 +52,9 @@ To maintain scientific integrity and prevent benchmark hacking, the promotion cr
 - Serving responses return the default prediction alongside all challenger predictions.
 - If input features fall outside validated training ranges, lookback is not 270 days, or current date is outside September–December, the engine emits explicit structured warning codes (`OUT_OF_RANGE_*`, `OUT_OF_SEASON_CALIBRATED_RUN_RATE`).
 - Serving models must originate from verified artifacts matching `artifacts.sha256`.
+
+---
+
+## 5. Model Reproducibility & Dual Contract Architecture
+- **Frozen Serving Parity (Golden Invariant)**: In serving environments, the frozen candidate champion (`models/clv_tweedie_tuned_2010_09_10.joblib`) must reproduce persisted test predictions (`data/processed/clv/test_predictions_2011-09-10.parquet`) with exact tolerance (`atol = 1e-9`).
+- **Retraining Parity Across Platforms**: When refitting the model pipeline from training features (`data/processed/features/features_train_2010-09-10.parquet`), predictions, coefficients, and intercept are validated via `check_retraining_parity()` against configured tolerances (`rtol = 1e-6`, `atol = 1e-6`, per `config/params.yaml`). This accommodates cross-platform iterative optimization solver variations (e.g. $4.22 \times 10^{-7}$ observed between Windows and Linux runners) while raising `ModelParityError` on genuine architectural or data drift.
