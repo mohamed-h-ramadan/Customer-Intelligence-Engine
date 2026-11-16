@@ -82,7 +82,7 @@ jobs:
 
       - name: Install client dependencies
         run: |
-          pip install httpx pandas pyarrow
+          pip install httpx
 
       - name: Execute Smoke Test
         run: |
