@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, feat/production-engine]
     tags: ["v*"]
   pull_request:
     branches: [main]
