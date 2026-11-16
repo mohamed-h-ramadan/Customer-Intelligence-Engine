@@ -1,6 +1,6 @@
 # Interview Playbook 01: Phase 1 — EDA & Statistical Diagnostics Q&A
 
-**Source Files**: [`01_data_understanding_&_EDA.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/01_data_understanding_&_EDA.ipynb), [`data_understanding_and_eda_report.md`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/reports/data_understanding_and_eda_report.md)
+**Source Files**: [`01_data_understanding_&_EDA.ipynb`](../Notebooks/01_data_understanding_&_EDA.ipynb), [`data_understanding_and_eda_report.md`](../reports/data_understanding_and_eda_report.md)
 
 ---
 

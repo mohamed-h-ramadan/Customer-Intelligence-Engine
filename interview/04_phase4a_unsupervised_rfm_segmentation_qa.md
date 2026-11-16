@@ -1,6 +1,6 @@
 # Interview Playbook 04: Phase 4a — Unsupervised RFM Segmentation Q&A
 
-**Source Files**: [`4_rfm_segmentation.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/4_rfm_segmentation.ipynb), [`src/segmentation.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/segmentation.py), [`tests/test_segmentation.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/tests/test_segmentation.py), [`rfm_segmentation_report.md`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/reports/rfm_segmentation_report.md)
+**Source Files**: [`4_rfm_segmentation.ipynb`](../Notebooks/4_rfm_segmentation.ipynb), [`src/segmentation.py`](../src/segmentation.py), [`tests/test_segmentation.py`](../tests/test_segmentation.py), [`rfm_segmentation_report.md`](../reports/rfm_segmentation_report.md)
 
 ---
 

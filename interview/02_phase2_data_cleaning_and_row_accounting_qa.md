@@ -1,6 +1,6 @@
 # Interview Playbook 02: Phase 2 — Data Cleaning & Row Accounting Q&A
 
-**Source Files**: [`2_data_cleaning_&_data_preprocessing.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/2_data_cleaning_&_data_preprocessing.ipynb), [`data_cleaning_and_preprocessing_report.md`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/reports/data_cleaning_and_preprocessing_report.md)
+**Source Files**: [`2_data_cleaning_&_data_preprocessing.ipynb`](../Notebooks/2_data_cleaning_&_data_preprocessing.ipynb), [`data_cleaning_and_preprocessing_report.md`](../reports/data_cleaning_and_preprocessing_report.md)
 
 ---
 

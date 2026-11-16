@@ -1,12 +1,12 @@
 # Customer Intelligence Engine: Phase 4b Supervised 90-Day CLV Modeling & Evaluation Report
 
 **Project**: Customer Intelligence Engine (RFM Segmentation + 90-Day CLV Regression)  
-**Source Notebook**: [`5_clv_modeling_&_evaluation.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/5_clv_modeling_&_evaluation.ipynb)  
-**Production Module**: [`src/clv.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py) | **Unit Tests**: [`tests/test_clv.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/tests/test_clv.py)  
+**Source Notebook**: [`5_clv_modeling_&_evaluation.ipynb`](../Notebooks/5_clv_modeling_&_evaluation.ipynb)  
+**Production Module**: [`src/clv.py`](../src/clv.py) | **Unit Tests**: [`tests/test_clv.py`](../tests/test_clv.py)  
 **Inputs**: `data/processed/features/features_train_2010-09-10.parquet`, `features_test_2011-09-10.parquet`, `segments_t_seg_2011-09-10.parquet` *(post-hoc diagnostics only)*, `sales_clean.parquet`, `returns_clean.parquet`  
 **Execution Environment**: Python `3.12.10` (`.venv` with `scikit-learn 1.9.1`, `scipy 1.18.1`, `joblib 1.6.0`, `pandas 3.1.1`, `pytest 9.2.0`)  
 **Status**: Completed, Frozen Before Test, Single-Shot Evaluated (`TEST_EVALUATION_COUNT = 1`), Unit-Tested (`55/55` Full Suite Passed), and Exported  
-**Companion Phase 4a Report**: [`rfm_segmentation_report.md`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/reports/rfm_segmentation_report.md)
+**Companion Phase 4a Report**: [`rfm_segmentation_report.md`](rfm_segmentation_report.md)
 
 ---
 
@@ -17,14 +17,14 @@ Phase 4b developed, benchmarked, interpreted, and evaluated an end-to-end **supe
 * **Holdout Test Ranking (`n = 3,224`, `£2,585,609.91`)**: Achieves **Spearman `0.5289`** `[0.5036, 0.5566]`, **Normalized Gini `0.7751`** `[0.6880, 0.8361]`, and **Top-10% Capture `56.12%` (`5.61x` Lift)** `[48.17%, 63.46%]` — capturing **`£1.45M`** by targeting just `322` customers (`92.55%` active buyer hit rate, `84.27%` of theoretical Oracle ceiling) and **`75.65%` (`£1.96M`)** at the Top 30% (`967` accounts).
 * **Value Over Heuristic `Run-Rate`**: While historical `monetary * 90/270` (`Run-Rate`) statistically ties Tweedie on pure ordering (paired bootstrap CIs on Gini/Cap@10 cross zero), `Run-Rate` suffers a severe **`-37.38%` aggregate revenue under-forecast** (`-31.17%` even without Top-5 whales). Tweedie GLM improves total revenue calibration by **`+23.93pp` (`95% CI [+18.69pp, +29.88pp]`)** overall (`-13.45%` all, **`-0.96%` Excl Top-5 whales**), and cuts test decile mean absolute calibration error in half (**`£145.69` vs `£299.53`**).
 * **Registered Q4 Coverage Ratio (`[2011-09-10, 2011-12-09)`)**: The `3,224` scored eligible customers generate **`80.96%` (`£2,585,609.91` / `£3,193,572.37`)** of all registered-customer Q4 gross sales (`80.88%` net), clearly separating out-of-scope cohorts: **Cold-Start new buyers (`12.06%`, `594` buyers)**, **Dormant-Reactivated (`6.98%`, `426` buyers)**, and **Returns-Only (`0.00%`, `6` accounts)**.
-* **Robustness & Software Quality**: Conclusions remain unchanged under net-of-returns `target_net` (`Gini 0.7721`, `+24.60pp` paired calibration margin). All reusable metrics, pipelines, hurdle/smearing wrappers, permutation importance, bootstrap CIs, and targeting/coverage helpers live in [`src/clv.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py) and passed **`55 / 55` unit tests** (`pytest -v` in `52.00s`), with `0.00e+00` `joblib` roundtrip discrepancy.
+* **Robustness & Software Quality**: Conclusions remain unchanged under net-of-returns `target_net` (`Gini 0.7721`, `+24.60pp` paired calibration margin). All reusable metrics, pipelines, hurdle/smearing wrappers, permutation importance, bootstrap CIs, and targeting/coverage helpers live in [`src/clv.py`](../src/clv.py) and passed **`55 / 55` unit tests** (`pytest -v` in `52.00s`), with `0.00e+00` `joblib` roundtrip discrepancy.
 
 ### Exported Model & Analytical Artifacts
 
 | Artifact | Location | Shape | Size | Role |
 | :--- | :--- | :---: | :---: | :--- |
-| [`clv_tweedie_tuned_2010_09_10.joblib`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/models/clv_tweedie_tuned_2010_09_10.joblib) | `models/` | Pipeline | `6.91 KB` | Frozen fitted `B: Tweedie GLM [Tuned]` production pipeline (`0.00e+00` roundtrip diff) |
-| [`test_predictions_2011-09-10.parquet`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/data/processed/clv/test_predictions_2011-09-10.parquet) | `data/processed/clv/` | `3,224 × 11` | `137.84 KB` | Customer-ID test targets, predictions (`Tweedie`, `Run-Rate`, baselines), decile, segment, residual |
+| [`clv_tweedie_tuned_2010_09_10.joblib`](../models/clv_tweedie_tuned_2010_09_10.joblib) | `models/` | Pipeline | `6.91 KB` | Frozen fitted `B: Tweedie GLM [Tuned]` production pipeline (`0.00e+00` roundtrip diff) |
+| [`test_predictions_2011-09-10.parquet`](../data/processed/clv/test_predictions_2011-09-10.parquet) | `data/processed/clv/` | `3,224 × 11` | `137.84 KB` | Customer-ID test targets, predictions (`Tweedie`, `Run-Rate`, baselines), decile, segment, residual |
 | `cv_leaderboard_5x3.{csv,parquet}` | `data/processed/clv/` | `14 × 26` | `2.91 / 18.98 KB` | Complete 5×3 train CV leaderboard across baselines, defaults & tuned candidates (`0` nulls) |
 | `test_metrics_with_95ci.{csv,parquet}` | `data/processed/clv/` | `48 × 10` | `6.70 / 8.52 KB` | Test point estimates + 1,000-resample 95% CIs & paired delta vs `Run-Rate` |
 | `test_whale_sensitivity.{csv,parquet}` | `data/processed/clv/` | `6 × 14` | `1.60 / 9.09 KB` | `All`, `Excl Top-1`, and `Excl Top-5` slices (`Tweedie` vs `Run-Rate`) |
@@ -52,20 +52,20 @@ flowchart TD
 ### 1.1 Input Integrity, Customer Overlap & Stratification
 * **Schema & Missingness Parity**: Exact column and dtype match between `train_df` (`3,228 × 29`) and `test_df` (`3,224 × 29`), unique `Customer ID` index, and structural nulls exclusively inside `mean_interpurchase_days` (`1,290 = 39.96%` train; `1,330 = 41.25%` test — matching `is_single_invoice == 1` identically).
 * **Temporal Customer Overlap**: Out of `3,224` test accounts, **`1,855` (`57.54%`)** also appeared in train (`57.47%` of train), while **`1,369` (`42.46%`)** were acquired or reactivated post-`2010-09-10` and **`1,373`** train accounts turned inactive prior to `[2010-12-14, 2011-09-10)`.
-* **Stratification Justification**: [`make_stratification_bins`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py#L59-L79) places exact zeros (`1,343` train rows) in Bin `0` and partitions positive targets into 9 equal quantile bins (Bin `9` spanning `£2,095.50–£79,192.85`), spreading wholesale extremes evenly across all `5 × 3 = 15` CV folds.
+* **Stratification Justification**: [`make_stratification_bins`](../src/clv.py#L59-L79) places exact zeros (`1,343` train rows) in Bin `0` and partitions positive targets into 9 equal quantile bins (Bin `9` spanning `£2,095.50–£79,192.85`), spreading wholesale extremes evenly across all `5 × 3 = 15` CV folds.
 
 ### 1.2 Forensic Whale Audit (Decision: Retain All Whales + Dual Reporting)
 Top accounts drive substantial revenue concentration without entry-error signatures:
 * **Pareto Share**: Train `Top 1 = 3.26%`, `Top 5 = 12.17%`, `Top 10 = 17.69%`; Test `Top 1 = 4.79%` (`ID 18102`, `£123,737.11`), `Top 5 = 17.26%`, `Top 10 = 22.64%`. Removing just Top-5 whales drops target standard deviation from `£2,979.94 -> £1,756.21` (train, skew `16.82 -> 9.06`) and `£4,097.15 -> £1,853.54` (test, skew `20.95 -> 8.98`).
 * **Audit of `ID 18102` (`£123,737.11`)**: Verified in `sales_clean.parquet` across **`32` legitimate target-window invoices** (`267` order lines, `118` SKUs, `32,507` units, **`0` return/credit rows**) following a consistent `23`-invoice / `£107,616.14` lookback. Also noted surging test whale `14096` (`£203.89` across 3 invoices in lookback -> `£53,054.54` across 14 invoices in Q4).
-* **Policy**: Retained all legitimate buyers intact and standardized dual evaluation metrics via `rmse_excl_top1`, `rmse_excl_top5`, and [`evaluate_whale_sensitivity_slices`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py).
+* **Policy**: Retained all legitimate buyers intact and standardized dual evaluation metrics via `rmse_excl_top1`, `rmse_excl_top5`, and [`evaluate_whale_sensitivity_slices`](../src/clv.py).
 
 ---
 
 ## 2. Baselines, Duan Smearing & CV Model Selection (Steps 3–7)
 
 ### 2.1 Why Single-Stage `log1p(y)` Fails Under 42% Zero-Inflation
-Evaluating [`Log1pSmearingRegressor`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py#L450-L490) on Train Fold 0 proved why retransforming single-stage `log1p(y)` predictions fails on zero-inflated CLV:
+Evaluating [`Log1pSmearingRegressor`](../src/clv.py#L450-L490) on Train Fold 0 proved why retransforming single-stage `log1p(y)` predictions fails on zero-inflated CLV:
 
 | Estimator (Fold 0 Probe) | Retransformation | Duan Factor $\hat{s}$ | Spearman | Norm Gini | Total Rev Err % | MAE (£) | RMSE (£) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -75,7 +75,7 @@ Evaluating [`Log1pSmearingRegressor`](file:///c:/Users/mosa/Desktop/Projects/Cus
 | `D1-Stage2: HistGBR` *(`y > 0` only)* | Naive `expm1` | `1.000` | 0.6015 | 0.7959 | -23.51% | 817.99 | 2,969.68 |
 | `D1-Stage2: HistGBR` *(`y > 0` only)* | **Duan Smearing** | **`1.064`** | 0.6015 | 0.7959 | **-18.61%** | 827.91 | 2,922.23 |
 
-Because `41.6%` of customers sit at `log1p(0) = 0` while fitted log values center around `~3–4`, bimodal residuals inflate $\frac{1}{n}\sum \exp(\hat{\epsilon}_i)$ to **`4.43x–11.61x`** and multiply positive buyers upward into severe `+98%` to `+294%` budget explosions. Restricting `log1p` regression strictly to `y > 0` inside [`HurdleCLVRegressor`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py#L492-L545) keeps smearing tight and well-behaved (**`1.064x`**).
+Because `41.6%` of customers sit at `log1p(0) = 0` while fitted log values center around `~3–4`, bimodal residuals inflate $\frac{1}{n}\sum \exp(\hat{\epsilon}_i)$ to **`4.43x–11.61x`** and multiply positive buyers upward into severe `+98%` to `+294%` budget explosions. Restricting `log1p` regression strictly to `y > 0` inside [`HurdleCLVRegressor`](../src/clv.py#L492-L545) keeps smearing tight and well-behaved (**`1.064x`**).
 
 ### 2.2 Complete `5 x 3` Train CV Leaderboard (`TEST_EVALUATION_COUNT = 0`)
 *Tuning objective approved at Step 6: `ranking_capture_score = 0.5 * Normalized Gini + 0.5 * Top-10% Capture` (`RandomizedSearchCV`, `n_iter=12` per family on Top 3 candidates).*
@@ -100,7 +100,7 @@ Because `41.6%` of customers sit at `log1p(0) = 0` while fitted log values cente
 
 ## 3. CV Feature Interpretation & Collinearity Analysis (Step 8)
 
-Using [`cv_permutation_importance`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py#L720-L815) (`15 folds × 10 repeats`) on both single features and [`CLV_FEATURE_GROUPS`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py#L680-L717):
+Using [`cv_permutation_importance`](../src/clv.py#L720-L815) (`15 folds × 10 repeats`) on both single features and [`CLV_FEATURE_GROUPS`](../src/clv.py#L680-L717):
 
 | Business Block (`CLV_FEATURE_GROUPS`) | # Cols | Primary `B` Joint Gini Drop | Sum of Single Drops | Collinearity Dilution (`Joint / Sum`) | Top-10% Cap Drop | Spearman Drop | MAE Inc (£) | Fallback `D2` Gini Drop |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |

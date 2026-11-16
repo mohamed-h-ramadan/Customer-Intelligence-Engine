@@ -1,6 +1,6 @@
 # Interview Playbook 05: Phase 4b — CLV Modeling, Evaluation & Business Defense Q&A
 
-**Source Files**: [`5_clv_modeling_&_evaluation.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/5_clv_modeling_&_evaluation.ipynb), [`src/clv.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py), [`tests/test_clv.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/tests/test_clv.py), [`clv_modeling_and_evaluation_report.md`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/reports/clv_modeling_and_evaluation_report.md)
+**Source Files**: [`5_clv_modeling_&_evaluation.ipynb`](../Notebooks/5_clv_modeling_&_evaluation.ipynb), [`src/clv.py`](../src/clv.py), [`tests/test_clv.py`](../tests/test_clv.py), [`clv_modeling_and_evaluation_report.md`](../reports/clv_modeling_and_evaluation_report.md)
 
 ---
 
@@ -18,7 +18,7 @@
 
 ### Q3: Your Fold 0 experiment showed **Duan Smearing** blew up `A1: Ridge (log1p)` by `+294.43%` (`smearing = 11.608x`). Why did Duan Smearing fail on single-stage CLV yet work cleanly (`1.064x`) inside the Hurdle model?
 * **Mathematical Intuition**: Duan's smearing factor $\hat{s} = \frac{1}{n}\sum \exp(\hat{\epsilon}_i)$ assumes homoscedastic errors on the transformed $\log(1 + y)$ scale. When **`41.6%` of rows sit at exact `log1p(0) = 0`** while predictions hover around `~3–4`, half the sample has massive negative residuals and positive buyers have large positive residuals — causing $\mathbb{E}[\exp(\epsilon)]$ to explode to **`11.608x` (`Ridge`)** and **`4.425x` (`HistGBR`)**, multiplying positive spenders upward into `+280%` / `+98%` aggregate over-prediction!
-* **How Hurdle & Tweedie Avoid This**: Inside [`HurdleCLVRegressor`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/clv.py#L492-L545), Stage 1 predicts $P(Y > 0 \mid X)$ and Stage 2 fits `log1p(y)` **strictly on positive buyers (`y > 0`)**, where errors are near-symmetric and Duan smearing drops to **`1.064x`**. Meanwhile **`TweedieRegressor` (`power=1.65`, log link)** directly models the compound Poisson-Gamma distribution ($0$ point mass + continuous skewed spend) on the native pound scale via MLE deviance — needing **zero retransformation heuristic**.
+* **How Hurdle & Tweedie Avoid This**: Inside [`HurdleCLVRegressor`](../src/clv.py#L492-L545), Stage 1 predicts $P(Y > 0 \mid X)$ and Stage 2 fits `log1p(y)` **strictly on positive buyers (`y > 0`)**, where errors are near-symmetric and Duan smearing drops to **`1.064x`**. Meanwhile **`TweedieRegressor` (`power=1.65`, log link)** directly models the compound Poisson-Gamma distribution ($0$ point mass + continuous skewed spend) on the native pound scale via MLE deviance — needing **zero retransformation heuristic**.
 
 ---
 

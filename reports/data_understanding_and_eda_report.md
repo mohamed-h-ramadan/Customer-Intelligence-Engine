@@ -2,10 +2,10 @@
 
 **Project**: Customer Intelligence Engine  
 **Dataset**: Online Retail II (`data/raws/online_retail_II.xlsx` — Sheets: `Year 2009-2010` & `Year 2010-2011`)  
-**Source Notebook**: [`01_data_understanding_&_EDA.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/01_data_understanding_&_EDA.ipynb)  
+**Source Notebook**: [`01_data_understanding_&_EDA.ipynb`](../Notebooks/01_data_understanding_&_EDA.ipynb)  
 **Execution Environment**: Python 3.12.10 (`.venv`)  
 **Status**: Completed & Production-Ready  
-**Phase Transition**: Handover to Phase 2 ([`2_data_cleaning_&_data_preprocessing.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/2_data_cleaning_&_data_preprocessing.ipynb))  
+**Phase Transition**: Handover to Phase 2 ([`2_data_cleaning_&_data_preprocessing.ipynb`](../Notebooks/2_data_cleaning_&_data_preprocessing.ipynb))  
 
 ---
 
@@ -205,7 +205,7 @@ Every visualization executed in the notebook serves as empirical justification f
 
 ## 4. Phase 2 Preprocessing & Data Cleaning Blueprint
 
-Based on the findings above, here is the concrete execution plan for [`2_data_cleaning_&_data_preprocessing.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/2_data_cleaning_&_data_preprocessing.ipynb):
+Based on the findings above, here is the concrete execution plan for [`2_data_cleaning_&_data_preprocessing.ipynb`](../Notebooks/2_data_cleaning_&_data_preprocessing.ipynb):
 
 ```mermaid
 flowchart TD

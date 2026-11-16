@@ -4,7 +4,7 @@
 **Every number in any report, model card, pull request, or architectural summary must cite a concrete source artifact and the exact CLI command or script that generates it. Any number lacking a verifiable source artifact and generation script is strictly prohibited and must be marked UNVERIFIED or removed immediately.**
 
 ## 2. Deterministic Generation Standard
-- **No Hand-Typed Numbers**: Metrics tables in user-facing documentation must be rendered deterministically by [scripts/render_metrics.py](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/scripts/render_metrics.py) directly from persisted CSV and Parquet artifacts.
+- **No Hand-Typed Numbers**: Metrics tables in user-facing documentation must be rendered deterministically by [scripts/render_metrics.py](../scripts/render_metrics.py) directly from persisted CSV and Parquet artifacts.
 - **CI Parity Enforcement**: The continuous integration pipeline runs `python scripts/render_metrics.py --check`. Any drift between committed documentation and underlying artifacts immediately fails the build with exit code 1.
 
 ## 3. Test-Set Honesty & Evaluation Accounting

@@ -1,7 +1,7 @@
 # Customer Intelligence Engine: Phase 2 Data Cleaning & Preprocessing Report
 
 **Project**: Customer Intelligence Engine (RFM Segmentation + 90-Day CLV Regression)  
-**Source Notebook**: [`2_data_cleaning_&_data_preprocessing.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/2_data_cleaning_&_data_preprocessing.ipynb)  
+**Source Notebook**: [`2_data_cleaning_&_data_preprocessing.ipynb`](../Notebooks/2_data_cleaning_&_data_preprocessing.ipynb)  
 **Raw Input**: `data/raws/online_retail_II.xlsx` (`Year 2009-2010` + `Year 2010-2011`)  
 **Execution Environment**: Python `3.12.10` (`.venv` with `pandas 3.1.1`, `pyarrow 26.0.1`)  
 **Status**: Completed, Validated (100% Row Conservation), and Exported to Parquet  

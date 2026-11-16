@@ -1,8 +1,8 @@
 # Customer Intelligence Engine: Phase 4a Unsupervised RFM Segmentation Report
 
 **Project**: Customer Intelligence Engine (RFM Segmentation + 90-Day CLV Regression)  
-**Source Notebook**: [`4_rfm_segmentation.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/4_rfm_segmentation.ipynb)  
-**Production Module**: [`src/segmentation.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/segmentation.py) | **Unit Tests**: [`tests/test_segmentation.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/tests/test_segmentation.py)  
+**Source Notebook**: [`4_rfm_segmentation.ipynb`](../Notebooks/4_rfm_segmentation.ipynb)  
+**Production Module**: [`src/segmentation.py`](../src/segmentation.py) | **Unit Tests**: [`tests/test_segmentation.py`](../tests/test_segmentation.py)  
 **Inputs**: `data/processed/sales_clean.parquet`, `returns_clean.parquet`, `data/processed/features/rfm_snapshot_2011-12-10.parquet`  
 **Execution Environment**: Python `3.12.10` (`.venv` with `scikit-learn 1.9.1`, `scipy 1.18.1`, `joblib 1.6.0`, `pandas 3.1.1`, `pytest 9.2.0`)  
 **Status**: Completed, Externally Validated (Zero Leakage), Unit-Tested (`38/38` Passed), and Exported  
@@ -26,7 +26,7 @@ Phase 4a designed, audited, and deployed a **single leak-free `sklearn` `Pipelin
 
 * **Pareto Value Concentration (`2011-12-10` Live View)**: Just **`10.87%` (`636`) `VIP Champions`** drive **`62.33%` (`£10.46M`)** of revenue; paired with **`Loyal Regulars` (`25.55%`)**, **`36.42%` of customers account for `85.17%` (`£14.29M`) of historical sales**.
 * **Proven Superiority Over Rule-Based RFM**: With **3 fewer segments (`5` vs `8`)**, K-Means achieves higher non-parametric future spend separation (Kruskal-Wallis **`H = 1,636.14`** vs `1,538.33`; rank **$\eta^2 = 0.3108$** vs `0.2918`; ANOVA $\eta^2$ on `log1p(target)` = **`0.2894`** vs `0.2769`), **`74.57 pp`** reactivation spread (`90.21%` to `15.64%`), and **2x higher mean spend** per top-tier buyer (`£3,241` vs `£1,640`).
-* **Software Engineering Quality**: All reusable logic lives inside [`src/segmentation.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/segmentation.py) and passed **`38 / 38` unit tests** (`pytest -v` in `3.49s`), with `.gitignore` verified for all generated `.joblib`, `.parquet`, and `.csv` artifacts.
+* **Software Engineering Quality**: All reusable logic lives inside [`src/segmentation.py`](../src/segmentation.py) and passed **`38 / 38` unit tests** (`pytest -v` in `3.49s`), with `.gitignore` verified for all generated `.joblib`, `.parquet`, and `.csv` artifacts.
 
 ---
 
@@ -70,20 +70,20 @@ flowchart TD
 | `B1`: Cap F & M at `q99` \| `sqrt(R) + log1p(F, M)` | 5,256 | 4.33 | 0.25% | 10.08% | 0.3419 | Unnecessary complexity (`0.0002` sil diff) |
 | `C`: Isolate Top 1% monetary (cluster 99%) | 5,203 | 4.43 | 0.73% | 14.51% | 0.3360 | Breaks unified single-Pipeline contract |
 
-Implemented via [`transform_rfm_features`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/segmentation.py#L15-L52) and [`build_rfm_pipeline`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/segmentation.py#L76-L99) so `joblib` serializes the entire pipeline cleanly without notebook lambdas.
+Implemented via [`transform_rfm_features`](../src/segmentation.py#L15-L52) and [`build_rfm_pipeline`](../src/segmentation.py#L76-L99) so `joblib` serializes the entire pipeline cleanly without notebook lambdas.
 
 ---
 
 ## 3. Baseline Rule-Based RFM Scoring (Step 2)
 
-Because **`29.97%` (`1,575 / 5,256`)** of accounts have **`frequency == 1`**, standard `pd.qcut(frequency, 5)` crashes on non-unique bin edges, and `rank(method="first")` arbitrarily splits identical `frequency == 1` accounts across `F=1` and `F=2`. Our [`score_rfm_rules`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/segmentation.py#L144-L173) uses **average percentile ranking** (`rank(method="average", pct=True)`) binned into quintiles, assigning **100% of `freq=1` (`1,575`) to `F=1`**, `freq=2` (`891`) to `F=2`, `freq=3` (`575`) to `F=3`, `4–7` (`1,170`) to `F=4`, and `8–284` (`1,045`) to `F=5`, partitioning all `125` cells into **8 mutually exclusive segments**.
+Because **`29.97%` (`1,575 / 5,256`)** of accounts have **`frequency == 1`**, standard `pd.qcut(frequency, 5)` crashes on non-unique bin edges, and `rank(method="first")` arbitrarily splits identical `frequency == 1` accounts across `F=1` and `F=2`. Our [`score_rfm_rules`](../src/segmentation.py#L144-L173) uses **average percentile ranking** (`rank(method="average", pct=True)`) binned into quintiles, assigning **100% of `freq=1` (`1,575`) to `F=1`**, `freq=2` (`891`) to `F=2`, `freq=3` (`575`) to `F=3`, `4–7` (`1,170`) to `F=4`, and `8–284` (`1,045`) to `F=5`, partitioning all `125` cells into **8 mutually exclusive segments**.
 
 ---
 
 ## 4. Selecting `K = 5` & Structural Robustness Checks (Steps 4 & 5)
 
 ### 4.1 Multi-Metric $K$-Selection Sweep (`K = 2..10`)
-Evaluating [`evaluate_kmeans_k_range`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/segmentation.py#L176-L242) with 20 bootstrap resamples confirmed why Elbow alone is inadequate on smooth customer clouds and why **`K = 5`** is the optimal operating point:
+Evaluating [`evaluate_kmeans_k_range`](../src/segmentation.py#L176-L242) with 20 bootstrap resamples confirmed why Elbow alone is inadequate on smooth customer clouds and why **`K = 5`** is the optimal operating point:
 
 | `K` | Inertia | Silhouette ↑ | Davies-Bouldin ↓ | Calinski-Harabasz ↑ | Bootstrap Stability (Mean ARI ± Std) ↑ | Min Cluster % | `< 3%` Flag |
 |---:|---:|---:|---:|---:|---:|---:|:---:|
@@ -96,7 +96,7 @@ Evaluating [`evaluate_kmeans_k_range`](file:///c:/Users/mosa/Desktop/Projects/Cu
 
 * **Why `K = 5`?** Lowest Davies-Bouldin across all $K \ge 3$ (`0.9148`), highest bootstrap stability (`ARI = 0.9515 ± 0.0214`, outperforming `K=4`'s noisy `0.8939 ± 0.073` and `K=6`'s `0.8857 ± 0.107`), balanced minimum cluster size (`9.13%` / `480` accounts), and separates the elite `9.1%` VIP wholesalers from steady regulars.
 
-### 4.2 Cross-Algorithm Robustness & `aov` Sensitivity ([`evaluate_robustness_checks`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/segmentation.py#L245-L314))
+### 4.2 Cross-Algorithm Robustness & `aov` Sensitivity ([`evaluate_robustness_checks`](../src/segmentation.py#L245-L314))
 | Method | `ARI` vs KMeans | `NMI` vs KMeans | Silhouette | Min Cluster % | Structural Interpretation |
 |---|---:|---:|---:|---:|:---|
 | `KMeans (3D RFM)` | `1.0000` | `1.0000` | **`0.3421`** | 9.13% | Balanced spherical partitions on continuous transformed RFM |
@@ -111,7 +111,7 @@ Evaluating [`evaluate_kmeans_k_range`](file:///c:/Users/mosa/Desktop/Projects/Cu
 ## 5. External Validation & Business Segment Profiles (Steps 6–9)
 
 ### 5.1 Unseen 90-Day Future Validation at `T_seg` (`[2011-09-10, 2011-12-09)`)
-*(Cohort total unseen spend = **£2,808,039.41**, overall reactivation = **`43.51%`**, evaluated strictly post-hoc via [`evaluate_external_validation`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/segmentation.py#L396-L478).)*
+*(Cohort total unseen spend = **£2,808,039.41**, overall reactivation = **`43.51%`**, evaluated strictly post-hoc via [`evaluate_external_validation`](../src/segmentation.py#L396-L478).)*
 
 | Business Segment | `T_seg` Custs (`%`) | Unseen 90d Reactivation | Mean Future Spend (£) | Median Future Spend (£) | Q90 Future Spend (£) | Share of 90d Future Spend | Relative Fit Profile (`Cluster / Global`) |
 |:---|---:|---:|---:|---:|---:|---:|:---|

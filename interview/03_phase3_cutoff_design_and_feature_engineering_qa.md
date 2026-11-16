@@ -1,6 +1,6 @@
 # Interview Playbook 03: Phase 3 — Cutoff Design & Feature Engineering Q&A
 
-**Source Files**: [`3_cutoff_design_&_feature_engineering.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/3_cutoff_design_&_feature_engineering.ipynb), [`src/features.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/features.py), [`tests/test_features.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/tests/test_features.py), [`cutoff_design_and_feature_engineering_report.md`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/reports/cutoff_design_and_feature_engineering_report.md)
+**Source Files**: [`3_cutoff_design_&_feature_engineering.ipynb`](../Notebooks/3_cutoff_design_&_feature_engineering.ipynb), [`src/features.py`](../src/features.py), [`tests/test_features.py`](../tests/test_features.py), [`cutoff_design_and_feature_engineering_report.md`](../reports/cutoff_design_and_feature_engineering_report.md)
 
 ---
 

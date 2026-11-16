@@ -1,8 +1,8 @@
 # Customer Intelligence Engine: Phase 3 Cutoff Design & Feature Engineering Report
 
 **Project**: Customer Intelligence Engine (RFM Segmentation + 90-Day CLV Regression)  
-**Source Notebook**: [`3_cutoff_design_&_feature_engineering.ipynb`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/Notebooks/3_cutoff_design_&_feature_engineering.ipynb)  
-**Production Module**: [`src/features.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/features.py) | **Unit Tests**: [`tests/test_features.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/tests/test_features.py)  
+**Source Notebook**: [`3_cutoff_design_&_feature_engineering.ipynb`](../Notebooks/3_cutoff_design_&_feature_engineering.ipynb)  
+**Production Module**: [`src/features.py`](../src/features.py) | **Unit Tests**: [`tests/test_features.py`](../tests/test_features.py)  
 **Inputs (`data/processed/`)**: `sales_clean.parquet` (`776,593 x 13`) + `returns_clean.parquet` (`17,585 x 13`)  
 **Execution Environment**: Python `3.12.10` (`.venv` with `pandas 3.1.1`, `pyarrow 26.0.1`, `scipy 1.18.1`, `scikit-learn 1.9.1`, `pytest 9.2.0`)  
 **Status**: Completed, Leakage-Audited, Unit-Tested (`15/15` passed), and Exported to Parquet  
@@ -24,7 +24,7 @@ Phase 3 converted transaction-level retail ledgers into **leak-free, customer-le
 
 * **Zero Temporal Leakage**: Every predictive feature uses strictly `InvoiceDate < T`, while targets use `T <= InvoiceDate < T + 90d` (`target_end = Dec 9 00:00`, automatically dropping `604` partial-day transactions on `2011-12-09 00:00–12:50`).
 * **Remarkable Cohort Stability**: Across all **25 numeric features**, **0 / 25** showed notable covariate drift between `T_train` and `T_test` (`PSI` `0.0000–0.0199`; `KS <= 0.0443`), proving the effectiveness of aligned seasonal cutoffs and fixed `L = 270d` lookbacks.
-* **Production Code Parity & Test Coverage**: All notebook logic was extracted identically into [`src/features.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/features.py), cross-checked via `pd.testing.assert_frame_equal`, and verified by **15 passing pytest cases** (`10` in [`test_data_utils.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/tests/test_data_utils.py) + `5` in [`test_features.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/tests/test_features.py)).
+* **Production Code Parity & Test Coverage**: All notebook logic was extracted identically into [`src/features.py`](../src/features.py), cross-checked via `pd.testing.assert_frame_equal`, and verified by **15 passing pytest cases** (`10` in [`test_data_utils.py`](../tests/test_data_utils.py) + `5` in [`test_features.py`](../tests/test_features.py)).
 
 ---
 
@@ -82,7 +82,7 @@ flowchart TD
 
 ## 3. Feature Catalog & Engineering Rationale (Steps 3–5)
 
-We engineered **26 features** organized into **6 behavioral groups** cleanly inside [`build_features`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/features.py#L48-L166), using only transactions in `[T - L, T)`.
+We engineered **26 features** organized into **6 behavioral groups** cleanly inside [`build_features`](../src/features.py#L48-L166), using only transactions in `[T - L, T)`.
 
 | Group | Feature Name | Definition in `[T - L, T)` | Analytical & Business Reasoning |
 | :--- | :--- | :--- | :--- |
@@ -118,7 +118,7 @@ Several features carry high structural Spearman collinearity on `train_df` (`|rh
 ## 4. Verification, Unit Testing & Leakage Audit (Steps 4–6)
 
 ### 4.1 Hard Boundary Assertions & Unit Tests
-Both [`build_features`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/features.py#L69-L85) and [`build_target`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/src/features.py#L187-L212) enforce loud runtime assertions (`max(InvoiceDate) < cutoff`, `min(InvoiceDate) >= cutoff - lookback`, `target >= 0`, `target_active == (target > 0)`), backed by deterministic synthetic fixture tests in both Notebook Step 4/5 and [`tests/test_features.py`](file:///c:/Users/mosa/Desktop/Projects/Customer-Intelligence-Engine/tests/test_features.py). Running `pytest -v` after Phase 3 completion passed **15 / 15 tests** in `0.34s`.
+Both [`build_features`](../src/features.py#L69-L85) and [`build_target`](../src/features.py#L187-L212) enforce loud runtime assertions (`max(InvoiceDate) < cutoff`, `min(InvoiceDate) >= cutoff - lookback`, `target >= 0`, `target_active == (target > 0)`), backed by deterministic synthetic fixture tests in both Notebook Step 4/5 and [`tests/test_features.py`](../tests/test_features.py). Running `pytest -v` after Phase 3 completion passed **15 / 15 tests** in `0.34s`.
 
 ### 4.2 Three-Pronged Leakage Audit Results (Step 6)
 1. **Timestamp Window Verification**:
