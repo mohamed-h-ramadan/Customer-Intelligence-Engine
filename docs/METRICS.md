@@ -68,11 +68,11 @@ Validated regime: `270d lookback`, `90d forward horizon`, Q4 Season (`Sep 10 –
 | Artifact | SHA-256 Checksum |
 | :--- | :--- |
 | `test_predictions_2011-09-10.parquet` | `9ab27256ff23f9729e1e91677b7ce5565e58a2ac7b357e6076e6980c27732e28` |
-| `test_metrics_with_95ci.csv` | `9df3f2144f80837de59b8a0847a47b8e010644c1cce534ca32243d516d8bd05d` |
-| `calibrated_run_rate_test_metrics_with_95ci.csv` | `797ce1143c26a3eea5bea4b07ef643a83c86992036ff4dd617a9a366c52a1985` |
-| `test_whale_sensitivity.csv` | `06bbf877ed04c6c70794a6be6bdb5dd0023ebc9c753491fa426b627c78585dcd` |
-| `test_whale_concentration.csv` | `71bf751dcdefaf08ae748d3edcb48b5f0555da8f4c619f404ac0e6ef68faed78` |
-| `targeting_simulation.csv` | `9ffbd33824c2a4ad9a68844454d61c93fb92d2a6c7e24f8b5b4e25c7ab651785` |
+| `test_metrics_with_95ci.csv` | `8b012172f285b1f8cbbd78cc7b0269d613d1801d29516908a425dc4a7734e041` |
+| `calibrated_run_rate_test_metrics_with_95ci.csv` | `464de84bc52a1f1982c60235d491110082a55590bb76bfdc92447eb6eec73573` |
+| `test_whale_sensitivity.csv` | `c53a482bb1849cf2a3a7611afa91a2808d4523739b75ff3ef360738d2fa166ee` |
+| `test_whale_concentration.csv` | `28dcf591f45f08fd49026154b48a89f1b49b9347f8e34760a58daa397cac6b09` |
+| `targeting_simulation.csv` | `cc75c3184200214945c4e6b9d6ea5ea6bcc979acb6372dd7d97f17dd351c1963` |
 
 - **Holdout Evaluation Provenance**: Champion evaluated once on holdout (as-of 2011-09-10); challengers and benchmarks evaluated afterwards on the same test set as reference (evaluation_counter = 2). Promotion decisions use train out-of-fold results only.
 - **Tweedie Frozen Checksum**: Verified against `models/clv_tweedie_tuned_2010_09_10.joblib`

@@ -1,0 +1,34 @@
+# ==============================================================================
+# Git Attributes: Enforce LF line endings and declare binary formats
+# ==============================================================================
+
+# Default rule: Auto-detect text files and normalize line endings to LF on checkout & commit
+* text=auto eol=lf
+
+# Explicit text files (enforce LF line endings across all platforms)
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.csv text eol=lf
+*.sha256 text eol=lf
+*.sh text eol=lf
+Makefile text eol=lf
+Dockerfile text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Binary files (must never be touched or corrupted by CRLF/LF line-ending filters)
+*.parquet binary
+*.joblib binary
+*.db binary
+*.sqlite binary
+*.xlsx binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
