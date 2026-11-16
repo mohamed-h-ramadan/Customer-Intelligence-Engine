@@ -251,7 +251,7 @@ def track_and_register_models(config: AppConfig | None = None) -> dict[str, str]
             ]
         )
         cal_summary_path = artifacts_dir / "calibrated_run_rate_summary.csv"
-        cal_summary.to_csv(cal_summary_path, index=False)
+        cal_summary.to_csv(cal_summary_path, index=False, lineterminator="\n")
         mlflow.log_artifact(str(cal_summary_path), artifact_path="challenger_metrics")
 
     return {

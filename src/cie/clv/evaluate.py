@@ -87,7 +87,7 @@ def run_evaluate_stage(config: AppConfig | None = None) -> dict[str, pd.DataFram
     )
     segment_slices = compute_slice_error_table(diag_df, "segment")
     segment_slices.to_parquet(clv_dir / "test_segment_error_slices.parquet")
-    segment_slices.to_csv(clv_dir / "test_segment_error_slices.csv")
+    segment_slices.to_csv(clv_dir / "test_segment_error_slices.csv", lineterminator="\n")
 
     # 3. Whale sensitivity slices
     whale_slices = evaluate_whale_sensitivity_slices(
@@ -96,7 +96,7 @@ def run_evaluate_stage(config: AppConfig | None = None) -> dict[str, pd.DataFram
         exclude_top_ks=(0, 1, 5),
     )
     whale_slices.to_parquet(clv_dir / "test_whale_sensitivity.parquet")
-    whale_slices.to_csv(clv_dir / "test_whale_sensitivity.csv")
+    whale_slices.to_csv(clv_dir / "test_whale_sensitivity.csv", lineterminator="\n")
 
     # 4. Targeting simulation
     targeting = compute_targeting_simulation(
@@ -108,7 +108,7 @@ def run_evaluate_stage(config: AppConfig | None = None) -> dict[str, pd.DataFram
         top_fracs=[0.1, 0.2, 0.3],
     )
     targeting.to_parquet(clv_dir / "targeting_simulation.parquet")
-    targeting.to_csv(clv_dir / "targeting_simulation.csv")
+    targeting.to_csv(clv_dir / "targeting_simulation.csv", lineterminator="\n")
 
     return {
         "test_predictions": test_predictions,

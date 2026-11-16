@@ -134,7 +134,7 @@ def run_segmentation_stage(config: AppConfig | None = None) -> dict[str, pd.Data
         seg_dir / f"segments_deploy_{config.pipeline.cutoffs.deploy_as_of}.parquet"
     )
     profiles.to_parquet(seg_dir / "segment_profiles.parquet")
-    profiles.to_csv(seg_dir / "segment_profiles.csv")
+    profiles.to_csv(seg_dir / "segment_profiles.csv", lineterminator="\n")
 
     return {
         "segments_t_seg": t_seg_export,

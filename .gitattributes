@@ -16,6 +16,7 @@
 *.csv text eol=lf
 *.sha256 text eol=lf
 *.sh text eol=lf
+*.ipynb text eol=lf
 Makefile text eol=lf
 Dockerfile text eol=lf
 .gitignore text eol=lf
