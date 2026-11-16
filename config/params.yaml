@@ -83,6 +83,10 @@ clv:
       name: "train_median_baseline"
       model_version: "v1.0-train-median"
       value: 222.08
+  retraining_parity:
+    rtol: 1.0e-06
+    atol: 1.0e-06
+    description: "Cross-platform retraining tolerance for Tweedie GLM iterative L-BFGS-B solver (justified by measured 4.2e-7 diff between MSVC and GCC builds)"
 
 regime:
   validated_lookback_days: 270

@@ -128,9 +128,18 @@ class ChallengersConfig(BaseModel):
     )
 
 
+class RetrainingParityConfig(BaseModel):
+    rtol: float = 1.0e-06
+    atol: float = 1.0e-06
+    description: str = (
+        "Cross-platform retraining tolerance for Tweedie GLM iterative L-BFGS-B solver"
+    )
+
+
 class ClvConfig(BaseModel):
     champion: ChampionConfig = Field(default_factory=ChampionConfig)
     challengers: ChallengersConfig = Field(default_factory=ChallengersConfig)
+    retraining_parity: RetrainingParityConfig = Field(default_factory=RetrainingParityConfig)
 
 
 class FeatureRange(BaseModel):

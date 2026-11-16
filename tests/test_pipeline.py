@@ -123,3 +123,46 @@ def test_cli_main_entrypoint(monkeypatch):
 
     monkeypatch.setattr("sys.argv", ["cie", "verify"])
     main()
+
+
+def test_check_retraining_parity_tolerance_logic():
+    """Verify check_retraining_parity passes within tolerance and raises ModelParityError beyond tolerance."""
+    import numpy as np
+    import pandas as pd
+    import pytest
+    from sklearn.linear_model import TweedieRegressor
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    from cie.clv.train import ModelParityError, check_retraining_parity
+
+    X_toy = pd.DataFrame({"f1": [1.0, 2.0, 3.0, 4.0, 5.0], "f2": [10.0, 20.0, 30.0, 40.0, 50.0]})
+    y_toy = np.array([2.0, 4.0, 6.0, 8.0, 10.0], dtype=float)
+
+    m1 = Pipeline(
+        [("prep", StandardScaler()), ("model", TweedieRegressor(power=1.5, max_iter=500))]
+    )
+    m1.fit(X_toy, y_toy)
+
+    # 1. Exact identical models must pass with zero diff
+    diffs = check_retraining_parity(m1, m1, X_toy, atol=1e-6, rtol=1e-6)
+    assert diffs["pred_max_abs"] == 0.0
+    assert diffs["coef_max_abs"] == 0.0
+
+    # 2. Perturbed model within tolerance passes
+    m2 = Pipeline(
+        [("prep", StandardScaler()), ("model", TweedieRegressor(power=1.5, max_iter=500))]
+    )
+    m2.fit(X_toy, y_toy)
+    m2.named_steps["model"].coef_ += 1e-8
+    diffs_pert = check_retraining_parity(m1, m2, X_toy, atol=1e-6, rtol=1e-6)
+    assert diffs_pert["coef_max_abs"] > 0.0
+
+    # 3. Perturbed model beyond tolerance raises ModelParityError
+    m3 = Pipeline(
+        [("prep", StandardScaler()), ("model", TweedieRegressor(power=1.5, max_iter=500))]
+    )
+    m3.fit(X_toy, y_toy)
+    m3.named_steps["model"].coef_ += 0.05
+    with pytest.raises(ModelParityError, match="diverges from frozen champion beyond tolerance"):
+        check_retraining_parity(m1, m3, X_toy, atol=1e-6, rtol=1e-6)
