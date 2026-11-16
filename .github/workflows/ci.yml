@@ -62,6 +62,7 @@ jobs:
       - name: Build local container image
         run: |
           docker build -t cie-api:test -f docker/Dockerfile .
+          docker images cie-api:test
 
       - name: Run container
         run: |
