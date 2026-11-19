@@ -153,8 +153,8 @@ def test_ref_2010_12_10_features_artifact_and_provenance():
     assert hashlib.sha256(feat_path.read_bytes()).hexdigest() == prov["output_sha256"]
 
 
-def test_season_matched_dec2010_vs_dec2011_drift_vanishes():
-    """Confirm tenure, recency, and trailing-window PSI collapse (< 0.01) when matching Dec 10 vs Dec 10."""
+def test_season_matched_dec2010_vs_dec2011_psi_below_warn():
+    """Assert PSI-only checks on Dec 2010 vs Dec 2011: 0/25 PSI warnings (< 0.02 max) and < 0.01 on seasonal subset."""
     root = get_project_root()
     drift_path = root / "data" / "processed" / "monitoring" / "feature_drift_report.csv"
     df = pd.read_csv(drift_path)

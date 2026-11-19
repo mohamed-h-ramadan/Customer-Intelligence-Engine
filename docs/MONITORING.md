@@ -9,7 +9,7 @@
 
 1. **Regime Check Precedes Drift Status (Critical Rule)**:
    - **Regime check comes BEFORE drift status: green input drift ($P(X)$ stability) does NOT mean predictions are valid when the scoring window is out-of-regime, because the target season differs and the conditional spend distribution $P(Y \mid X)$ can change dramatically.**
-   - Specifically, Dec 2010 vs Dec 2011 (`2010-12-10` vs `2011-12-10`) shows `0 / 25` feature PSI alerts (`PSI <= 0.0178`), yet predicting at `2011-12-10` (`[Dec 10, Mar 9)`) has `0/90` overlap with `[Sep 10, Dec 9)`, so Q4 holiday expansion does not apply to Q1 winter demand.
+   - Specifically, Dec 2010 vs Dec 2011 (`2010-12-10` vs `2011-12-10`, one year-pair only with `2,444` shared customers) triggers **no PSI warn/alert** (`max PSI = 0.0178`), yet predicting at `2011-12-10` (`[Dec 10, Mar 9)`) has `0/90` overlap with `[Sep 10, Dec 9)`, so Q4 holiday expansion does not apply to Q1 winter demand.
 2. **90-Day Label Lag**:
    - For any prediction cohort scored at cutoff $T$, ground-truth 90-day gross spending labels ($y \in [T, T + 90\text{d})$) arrive **90 days late**.
    - Consequently, **Regime Compliance**, **Feature Drift (PSI/KS)**, and **Prediction/Segment-Mix Drift** are our **leading operational indicators** (available immediately at scoring time).
@@ -66,7 +66,10 @@ All statistical thresholds below are conventional starting baselines (*initial, 
   3. `recency_days` (`PSI = 0.1266` WARN vs Test; `0.1534` WARN vs Train): Active buyers shop more recently during Q4 peak (`mean 86.5d -> 70.1d`).
   4. `invoices_last_90d` (`PSI = 0.0987` OK vs Test; `0.1028` WARN vs Train): Trailing 90d captures Q4 purchase frequency surge (`mean 1.22 -> 1.67`).
 - **Phase 3 Train-vs-Test Reference (`test_2011-09-10 vs train_2010-09-10`)**: Reproduces exact Phase 3 notebook parity (`0 / 25` features flagged, max `PSI = 0.0199` on `tenure_days_in_window`).
-- **Season-Matched Verification (`deploy_2011-12-10_270d` vs `ref_2010-12-10_270d`, $n=3,957$)**: Comparing December-to-December eliminates all tenure/recency/trailing-window drift (`0 / 25` features flagged, `max PSI = 0.0178`; `tenure_days_in_window` `0.0074`, `spend_last_90d_ratio` `0.0017`, `recency_days` `0.0082`, `invoices_last_90d` `0.0005`), empirically supporting the seasonal hypothesis while reaffirming **Section 1 Rule 1** (input stability does not make Dec 10 in-regime for Q1 prediction).
+- **Season-Matched Comparison (`deploy_2011-12-10_270d` $n=3,945$ vs `ref_2010-12-10_270d` $n=3,957$)**:
+  - **PSI results (no PSI warn/alert)**: Comparing December-to-December produces `0 / 25` PSI warns/alerts (`max PSI = 0.0178` on `avg_unit_price`; `tenure_days_in_window` `0.0074`, `spend_last_90d_ratio` `0.0017`, `recency_days` `0.0082`, `invoices_last_90d` `0.0005`).
+  - **KS small-shift detections (`ks_bonferroni_p < 0.05` & `PSI < 0.10`)**: KS still detects small distributional shifts in **5** listed features (all with `PSI < 0.02`): `return_value_ratio` (`KS=0.0563`, `p_bonf=0.000169`), `avg_unit_price` (`KS=0.0536`, `p_bonf=0.000550`), `return_rate` (`KS=0.0510`, `p_bonf=0.001637`), `return_value_abs` (`KS=0.0474`, `p_bonf=0.006573`), and `return_invoice_count` (`KS=0.0448`, `p_bonf=0.017336`).
+  - **Non-independence & Hypothesis Caveat**: The two December cohorts share **`2,444` overlapping customers** (`61.76%` of `ref_2010-12-10` and `61.95%` of `deploy_2011-12-10`), so the two samples are **not independent**; moreover, this covers **one year-pair only**, so the seasonal explanation stays a **supported hypothesis, not proof** (and reaffirms **Section 1 Rule 1**: low input PSI does not make Dec 10 in-regime for Q1 prediction).
 
 ### 4.2 Prediction & Segment-Mix Drift (All Three Models)
 *Source Artifacts*: [`data/processed/monitoring/prediction_drift_report.csv`](../data/processed/monitoring/prediction_drift_report.csv), [`data/processed/monitoring/segment_mix_drift.csv`](../data/processed/monitoring/segment_mix_drift.csv) (*Command*: `python scripts/run_monitoring_phase_a.py`).
