@@ -33,6 +33,9 @@
 ## 4. Git Commit History (`git log --oneline`)
 
 ```text
+e7b587c docs(monitoring): clarify Dec-to-Dec KS small shifts, shared customers, and rename PSI-only test
+1ec28c7 chore(monitoring): extract cohort bridge script for 596/425/300/1021/721 counts and cite in MONITORING.md
+b212a05 docs: regenerate STATUS.md (120 collected tests, CI coverage UNVERIFIED)
 0a57848 docs(monitoring): add regime-precedence rule, monotone scaling caveat, and provenance citations
 90258fb feat(monitoring): add season-matched 2010-12-10 270d reference and drift regression test
 82aa7b7 docs: regenerate STATUS.md (118 collected tests, CI coverage UNVERIFIED)
@@ -80,7 +83,4 @@ a3a4c82 feat(api): implement versioned FastAPI service with health, model card, 
 5981635 feat(core): implement framework-agnostic scoring core with regime validation and golden-file parity
 52c7868 feat(tracking): add MLflow experiment tracking and model registry with champion/challenger aliases
 23c6140 feat(pipeline): add reproducible CLI stages and Makefile with golden-file parity assertions
-79f1bd0 ci: track initial tests.yml workflow
-cce678f style: format existing code with ruff and track reports/notebooks
-8ae2682 feat(packaging): add cie package, config/params.yaml, pyproject.toml and ruff config
 ```
