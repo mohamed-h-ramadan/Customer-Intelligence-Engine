@@ -33,6 +33,8 @@
 ## 4. Git Commit History (`git log --oneline`)
 
 ```text
+b70b6f8 docs(monitoring): restrict persistence rule to leading triggers and clarify once-per-season manual backtest review
+202c571 docs: regenerate STATUS.md after MONITORING Section 5 fix
 0047b46 docs(monitoring): fix Section 5 decision table CIs, persistence, whales, data-quality, seasonal recalibration, and owners
 14c75c3 docs: regenerate STATUS.md after evidence gap fixes (120 tests, CI UNVERIFIED)
 e7b587c docs(monitoring): clarify Dec-to-Dec KS small shifts, shared customers, and rename PSI-only test
@@ -81,6 +83,4 @@ cf188f8 test(clv): add golden tests for run-rate, calibrated run-rate, and audit
 b123f57 test(clv): add metrics regression test suite asserting exact parity against Phase 4b artifacts
 c10de79 ci: configure GitHub Actions workflow for linting, tests, docker smoke test, and ghcr publishing
 a6481b6 feat(docker): add multi-stage Dockerfile, docker-compose with MLflow, and service smoke-test script
-a3a4c82 feat(api): implement versioned FastAPI service with health, model card, scoring, and backtest endpoints
-5981635 feat(core): implement framework-agnostic scoring core with regime validation and golden-file parity
 ```
