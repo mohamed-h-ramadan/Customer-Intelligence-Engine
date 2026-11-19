@@ -39,6 +39,7 @@ venv.bak/
 htmlcov/
 nosetests.xml
 coverage.xml
+retrain_parity_report.json
 *.cover
 *.py,cover
 

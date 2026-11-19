@@ -166,3 +166,31 @@ def test_check_retraining_parity_tolerance_logic():
     m3.named_steps["model"].coef_ += 0.05
     with pytest.raises(ModelParityError, match="diverges from frozen champion beyond tolerance"):
         check_retraining_parity(m1, m3, X_toy, atol=1e-6, rtol=1e-6)
+
+
+def test_retrain_parity_report_schema(tmp_path):
+    """Verify run_train_stage emits a valid retrain_parity_report.json with complete provenance."""
+    import json
+
+    report_file = tmp_path / "retrain_parity_report.json"
+    run_train_stage(report_path=report_file)
+    assert report_file.is_file(), "retrain_parity_report.json was not written"
+
+    with open(report_file, encoding="utf-8") as f:
+        report = json.load(f)
+
+    assert isinstance(report["platform"], str) and len(report["platform"]) > 0
+    assert isinstance(report["python_version"], str) and len(report["python_version"]) > 0
+
+    versions = report["versions"]
+    for pkg in ["numpy", "scipy", "scikit-learn", "pandas", "joblib"]:
+        assert pkg in versions and isinstance(versions[pkg], str) and len(versions[pkg]) > 0
+
+    diffs = report["diffs"]
+    for key in ["pred_max_abs", "pred_max_rel", "coef_max_abs", "coef_max_rel", "intercept_abs"]:
+        assert key in diffs and isinstance(diffs[key], (int, float)) and diffs[key] >= 0.0
+
+    tolerances = report["tolerances"]
+    assert tolerances["atol"] == 1e-6
+    assert tolerances["rtol"] == 1e-6
+    assert report["passed"] is True
