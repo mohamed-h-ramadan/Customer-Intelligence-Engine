@@ -22,31 +22,29 @@ NUMERIC_FEATURE_COLUMNS: list[str] = [c for c in FEATURE_COLUMNS if c != "countr
 PSI_WARN_THRESHOLD = 0.10
 PSI_ALERT_THRESHOLD = 0.25
 
-# Regime/seasonal feature attribution rules grounded in cutoff shift (Sep 10 -> Dec 10)
+# Hard-coded domain hypothesis mapping (not empirically verified from ground-truth targets)
 SEASONAL_REGIME_FEATURES: dict[str, str] = {
     "tenure_days_in_window": (
-        "expected seasonal/regime effect: Q4 peak new-buyer onboarding pulls lower-tail tenure "
-        "(10th pct 52.4d -> 35.4d) and spring-to-Christmas cohort age distribution"
+        "seasonal/regime hypothesis: 596 first-time buyers since 2011-09-10 and 425 reactivated "
+        "buyers pull lower-tail tenure (10th pct 52.4d -> 35.4d)"
     ),
     "spend_last_90d_ratio": (
-        "expected seasonal/regime effect: trailing 90d at 2011-12-10 sits on Q4 peak (Sep-Dec) "
+        "seasonal/regime hypothesis: trailing 90d at 2011-12-10 sits on Q4 peak (Sep-Dec) "
         "rather than summer (Jun-Sep), lifting mean 90d spend share from ~34-35% to ~50%"
     ),
     "recency_days": (
-        "expected seasonal/regime effect: active buyers shop more recently during Q4 peak "
+        "seasonal/regime hypothesis: active buyers shop more recently during Q4 peak "
         "(mean recency compresses from ~86d to ~70d)"
     ),
     "invoices_last_90d": (
-        "expected seasonal/regime effect: trailing 90d covers Q4 shopping frequency surge "
+        "seasonal/regime hypothesis: trailing 90d covers Q4 shopping frequency surge "
         "(mean 1.22 -> 1.67)"
     ),
-    "spend_last_90d": (
-        "expected seasonal/regime effect: trailing 90d overlaps Q4 seasonal spend peak"
-    ),
-    "invoices_last_60d": ("expected seasonal/regime effect: trailing 60d overlaps Oct-Dec peak"),
-    "spend_last_60d": ("expected seasonal/regime effect: trailing 60d overlaps Oct-Dec peak"),
-    "invoices_last_30d": ("expected seasonal/regime effect: trailing 30d overlaps Nov-Dec peak"),
-    "spend_last_30d": ("expected seasonal/regime effect: trailing 30d overlaps Nov-Dec peak"),
+    "spend_last_90d": ("seasonal/regime hypothesis: trailing 90d overlaps Q4 seasonal spend peak"),
+    "invoices_last_60d": ("seasonal/regime hypothesis: trailing 60d overlaps Oct-Dec peak"),
+    "spend_last_60d": ("seasonal/regime hypothesis: trailing 60d overlaps Oct-Dec peak"),
+    "invoices_last_30d": ("seasonal/regime hypothesis: trailing 30d overlaps Nov-Dec peak"),
+    "spend_last_30d": ("seasonal/regime hypothesis: trailing 30d overlaps Nov-Dec peak"),
 }
 
 
@@ -147,7 +145,11 @@ def classify_psi_status(
 
 
 def classify_drifting_feature(feature: str, psi_val: float, ks_bonf_p: float) -> tuple[str, str]:
-    """Classify a drifting feature into regime/seasonal vs needs investigation."""
+    """Assign a feature drift classification using a hard-coded domain hypothesis mapping.
+
+    Note: `SEASONAL_REGIME_FEATURES` is a static heuristic list of feature names (not verified
+    from post-cutoff ground-truth labels), so attributed shifts are labeled `seasonal/regime hypothesis`.
+    """
     is_psi_drift = psi_val >= PSI_WARN_THRESHOLD
     is_ks_drift = ks_bonf_p < 0.01
 
@@ -158,7 +160,7 @@ def classify_drifting_feature(feature: str, psi_val: float, ks_bonf_p: float) ->
         reason = SEASONAL_REGIME_FEATURES[feature]
         if not is_psi_drift:
             reason += " (detected by KS at large N; PSI remains < 0.10)"
-        return "expected seasonal/regime effect", reason
+        return "seasonal/regime hypothesis", reason
 
     if is_psi_drift:
         return (
@@ -166,7 +168,7 @@ def classify_drifting_feature(feature: str, psi_val: float, ks_bonf_p: float) ->
             f"Core non-subwindow feature exceeded PSI threshold ({psi_val:.4f} >= 0.10)",
         )
     return (
-        "expected seasonal/regime effect"
+        "seasonal/regime hypothesis"
         if feature
         in {
             "n_unique_products",

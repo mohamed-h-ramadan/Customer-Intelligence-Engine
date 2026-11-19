@@ -56,11 +56,12 @@ All statistical thresholds below are conventional starting baselines (*initial, 
   - `aov`: `PSI = 0.0094` (vs Test), `0.0082` (vs Train) -> **OK**
   - `is_uk`: `PSI = 0.0007` (vs Test), `0.0034` (vs Train) -> **OK**
   - `is_single_invoice`: `PSI = 0.0061` (vs Test), `0.0027` (vs Train) -> **OK**
-- **Drifting Features (`PSI >= 0.10`) — Classified as `expected seasonal/regime effect`**:
-  1. `tenure_days_in_window` (`PSI = 0.2257` WARN vs Test; `0.3322` ALERT vs Train): Lower tail (`10th` pct `52.4d -> 35.4d`) shifts downward due to ~720 newly onboarded Q4 holiday buyers ($n=3,945$ vs $3,224$), plus edge shift vs Dec 2009 dataset start.
+- **Drifting Features (`PSI >= 0.10`) — Labeled `seasonal/regime hypothesis`** *(Note: assigned via hard-coded feature-name mapping `SEASONAL_REGIME_FEATURES` in `src/cie/monitoring/drift.py`, not computed from post-cutoff labels)*:
+  1. `tenure_days_in_window` (`PSI = 0.2257` WARN vs Test; `0.3322` ALERT vs Train): Lower tail (`10th` pct `52.4d -> 35.4d`) shifts downward as the active 270d cohort grows by `+721` net accounts ($n=3,945$ vs $3,224$), comprising **`596` first-time buyers** (whose first-ever purchase in `sales_clean.parquet` is `>= 2011-09-10`, `15.11%` of deploy) plus **`425` reactivated lapsed buyers** (`1,021` total non-test accounts minus `300` churned accounts).
   2. `spend_last_90d_ratio` (`PSI = 0.1544` WARN vs Test; `0.1765` WARN vs Train): Trailing 90d at `2011-12-10` spans Q4 peak (`Sep–Dec`), raising mean 90d spend share from `34–35%` (summer) to `50.0%`.
   3. `recency_days` (`PSI = 0.1266` WARN vs Test; `0.1534` WARN vs Train): Active buyers shop more recently during Q4 peak (`mean 86.5d -> 70.1d`).
   4. `invoices_last_90d` (`PSI = 0.0987` OK vs Test; `0.1028` WARN vs Train): Trailing 90d captures Q4 purchase frequency surge (`mean 1.22 -> 1.67`).
+- **Phase 3 Train-vs-Test Reference (`test_2011-09-10 vs train_2010-09-10`)**: Reproduces exact Phase 3 notebook parity (`0 / 25` features flagged, max `PSI = 0.0199` on `tenure_days_in_window`).
 
 ### 4.2 Prediction & Segment-Mix Drift (All Three Models)
 *Source Artifacts*: [`data/processed/monitoring/prediction_drift_report.csv`](../data/processed/monitoring/prediction_drift_report.csv), [`data/processed/monitoring/segment_mix_drift.csv`](../data/processed/monitoring/segment_mix_drift.csv).
