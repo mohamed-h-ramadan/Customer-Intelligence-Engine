@@ -8,7 +8,7 @@
 
 | Metric | Value | Source / Provenance |
 | :--- | :--- | :--- |
-| **Collected Unit & Integration Tests** | **118** | `pytest --collect-only -q` |
+| **Collected Unit & Integration Tests** | **120** | `pytest --collect-only -q` |
 | **CI Coverage (Linux Runner)** | UNVERIFIED (no CI coverage.xml artifact provided) | CI `coverage.xml` artifact / pasted CI log |
 | **Latest CI Run Verified** | `UNVERIFIED` | `docs/ci_evidence.json` |
 | **Docker Image (`docker images cie-api:test`)** | UNVERIFIED | CI `Build local container image` step |
@@ -33,6 +33,9 @@
 ## 4. Git Commit History (`git log --oneline`)
 
 ```text
+0a57848 docs(monitoring): add regime-precedence rule, monotone scaling caveat, and provenance citations
+90258fb feat(monitoring): add season-matched 2010-12-10 270d reference and drift regression test
+82aa7b7 docs: regenerate STATUS.md (118 collected tests, CI coverage UNVERIFIED)
 49dffad fix(monitoring): replace cohort-diff proxy with exact 596 new buyers and relabel hard-coded seasonal rule as hypothesis
 9cad92e feat(monitoring): add symmetric calibrated run-rate slice metrics and document ex-post whale slices
 e910b3e test(monitoring): add Phase 3 test vs train comparison to feature drift report with parity regression test
@@ -80,5 +83,4 @@ a3a4c82 feat(api): implement versioned FastAPI service with health, model card, 
 79f1bd0 ci: track initial tests.yml workflow
 cce678f style: format existing code with ruff and track reports/notebooks
 8ae2682 feat(packaging): add cie package, config/params.yaml, pyproject.toml and ruff config
-5d4ab69 Initial commit
 ```
