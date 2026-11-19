@@ -8,7 +8,7 @@
 
 | Metric | Value | Source / Provenance |
 | :--- | :--- | :--- |
-| **Collected Unit & Integration Tests** | **117** | `pytest --collect-only -q` |
+| **Collected Unit & Integration Tests** | **118** | `pytest --collect-only -q` |
 | **CI Coverage (Linux Runner)** | UNVERIFIED (no CI coverage.xml artifact provided) | CI `coverage.xml` artifact / pasted CI log |
 | **Latest CI Run Verified** | `UNVERIFIED` | `docs/ci_evidence.json` |
 | **Docker Image (`docker images cie-api:test`)** | UNVERIFIED | CI `Build local container image` step |
@@ -33,6 +33,11 @@
 ## 4. Git Commit History (`git log --oneline`)
 
 ```text
+49dffad fix(monitoring): replace cohort-diff proxy with exact 596 new buyers and relabel hard-coded seasonal rule as hypothesis
+9cad92e feat(monitoring): add symmetric calibrated run-rate slice metrics and document ex-post whale slices
+e910b3e test(monitoring): add Phase 3 test vs train comparison to feature drift report with parity regression test
+d024792 feat(monitoring): tighten regime rule to integer overlap_days >= 76 (+/-14d judgment call)
+ddfa355 docs: regenerate STATUS.md with 117 collected tests and Phase A commits
 50b66c2 docs(monitoring): add MONITORING.md draft with thresholds, decision table, and Phase B plan
 66cf74b feat(monitoring): add 2011-09-10 cohort backtest report, runner script, and regression tests
 07e5fdf feat(monitoring): add PSI/KS feature, prediction, and segment-mix drift analysis with tests
