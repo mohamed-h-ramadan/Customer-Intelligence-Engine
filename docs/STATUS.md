@@ -8,7 +8,7 @@
 
 | Metric | Value | Source / Provenance |
 | :--- | :--- | :--- |
-| **Collected Unit & Integration Tests** | **106** | `pytest --collect-only -q` |
+| **Collected Unit & Integration Tests** | **117** | `pytest --collect-only -q` |
 | **CI Coverage (Linux Runner)** | UNVERIFIED (no CI coverage.xml artifact provided) | CI `coverage.xml` artifact / pasted CI log |
 | **Latest CI Run Verified** | `UNVERIFIED` | `docs/ci_evidence.json` |
 | **Docker Image (`docker images cie-api:test`)** | UNVERIFIED | CI `Build local container image` step |
@@ -33,6 +33,12 @@
 ## 4. Git Commit History (`git log --oneline`)
 
 ```text
+50b66c2 docs(monitoring): add MONITORING.md draft with thresholds, decision table, and Phase B plan
+66cf74b feat(monitoring): add 2011-09-10 cohort backtest report, runner script, and regression tests
+07e5fdf feat(monitoring): add PSI/KS feature, prediction, and segment-mix drift analysis with tests
+814a5d8 feat(monitoring): add pure horizon-overlap assess_regime function and known-answer tests
+47a1f72 chore: ignore local AI assistant tool folders
+276960f docs: generate STATUS.md and update platform precision in ADR-002 and MODEL_CARD
 f188e5e feat(docs): add deterministic render_status.py generator, ci_evidence.json, and tests
 fe6f97b docs: mark unverified CI metrics and cite Run 43946052472 in ADR-002 and MODEL_CARD
 610efcf ci: upload retrain_parity_report.json artifact on test completion
