@@ -1,0 +1,32 @@
+{
+  "ci_runs": [
+    {
+      "run_id": "43946052472",
+      "branch": "feat/production-engine",
+      "overall_conclusion": "failure",
+      "jobs": {
+        "test": "failure (failed on retrain tolerance: pred_max_abs = 4.227549652568996e-07 > 1e-9)",
+        "docker-smoke": "skipped (blocked by needs: test)",
+        "publish": "skipped (non-tag push)"
+      }
+    },
+    {
+      "run_id": "43950135466",
+      "branch": "feat/production-engine",
+      "overall_conclusion": "failure",
+      "jobs": {
+        "test": "success (Code Quality & Tests passed)",
+        "docker-smoke": "failure (docker build passed, docker run passed, old Execute Smoke Test step failed)",
+        "publish": "skipped (non-tag push)"
+      }
+    }
+  ],
+  "latest_ci_evidence": {
+    "run_id": "UNVERIFIED",
+    "ci_coverage_xml_path": null,
+    "ci_coverage_line": "UNVERIFIED",
+    "docker_images_line": "UNVERIFIED",
+    "smoke_test_result": "UNVERIFIED",
+    "retrain_parity_report_json": "UNVERIFIED"
+  }
+}
