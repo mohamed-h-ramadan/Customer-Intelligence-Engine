@@ -129,3 +129,46 @@ def test_phase3_train_vs_test_drift_exact_parity():
     max_row = sub.loc[sub["psi"].idxmax()]
     assert max_row["feature"] == "tenure_days_in_window"
     assert round(float(max_row["psi"]), 4) == pytest.approx(0.0199, abs=1e-4)
+
+
+def test_ref_2010_12_10_features_artifact_and_provenance():
+    """Verify persisted 2010-12-10 270d season-matched reference artifact and provenance SHA."""
+    root = get_project_root()
+    feat_path = root / "data" / "processed" / "features" / "features_ref_2010-12-10_270d.parquet"
+    prov_path = (
+        root / "data" / "processed" / "monitoring" / "features_ref_2010-12-10_270d_provenance.json"
+    )
+    assert feat_path.is_file()
+    assert prov_path.is_file()
+
+    df = pd.read_parquet(feat_path)
+    prov = json.loads(prov_path.read_text(encoding="utf-8"))
+
+    assert df.index.name == "Customer ID"
+    assert list(df.columns) == FEATURE_COLUMNS
+    assert prov["as_of"] == "2010-12-10"
+    assert prov["lookback_days"] == 270
+    assert prov["window_start"] == "2010-03-15"
+    assert prov["n_customers"] == len(df)
+    assert hashlib.sha256(feat_path.read_bytes()).hexdigest() == prov["output_sha256"]
+
+
+def test_season_matched_dec2010_vs_dec2011_drift_vanishes():
+    """Confirm tenure, recency, and trailing-window PSI collapse (< 0.01) when matching Dec 10 vs Dec 10."""
+    root = get_project_root()
+    drift_path = root / "data" / "processed" / "monitoring" / "feature_drift_report.csv"
+    df = pd.read_csv(drift_path)
+
+    sub = df[df["comparison"] == "deploy_2011-12-10_270d vs ref_2010-12-10_270d"]
+    assert len(sub) == 25
+    assert (sub["psi_status"] == "OK").all()
+    assert float(sub["psi"].max()) < 0.02
+
+    for feat in [
+        "tenure_days_in_window",
+        "spend_last_90d_ratio",
+        "recency_days",
+        "invoices_last_90d",
+    ]:
+        psi_val = float(sub.loc[sub["feature"] == feat, "psi"].iloc[0])
+        assert psi_val < 0.01, f"Expected {feat} season-matched PSI < 0.01, got {psi_val}"

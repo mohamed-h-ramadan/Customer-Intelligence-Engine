@@ -114,11 +114,12 @@ data/processed/*
 !data/processed/monitoring/
 !data/processed/segmentation/
 
-# Features: whitelist test, train, and 270d deploy cohorts (~300 KB each)
+# Features: whitelist test, train, and 270d seasonal/deploy cohorts (~300 KB each)
 data/processed/features/*
 !data/processed/features/features_test_2011-09-10.parquet
 !data/processed/features/features_train_2010-09-10.parquet
 !data/processed/features/features_deploy_2011-12-10_270d.parquet
+!data/processed/features/features_ref_2010-12-10_270d.parquet
 
 # Segmentation: whitelist only test cohort and profiles
 data/processed/segmentation/*

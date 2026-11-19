@@ -44,6 +44,53 @@ def _sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def _build_or_load_270d_cohort(
+    root: Path,
+    output_dir: Path,
+    as_of_str: str,
+    rel_parquet_path: str,
+    prov_filename: str,
+    lookback: int,
+    sales_path: Path,
+    returns_path: Path,
+    rebuild: bool,
+) -> pd.DataFrame:
+    """Build a 270d lookback cohort and provenance JSON if clean parquets exist, else load persisted parquet."""
+    feat_path = root / rel_parquet_path
+    if rebuild and sales_path.is_file() and returns_path.is_file():
+        sales_clean = pd.read_parquet(sales_path)
+        returns_clean = pd.read_parquet(returns_path)
+        cutoff = pd.Timestamp(f"{as_of_str} 00:00:00")
+
+        df = build_features(sales_clean, returns_clean, cutoff=cutoff, lookback_days=lookback)
+        feat_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_parquet(feat_path, index=True)
+
+        provenance = {
+            "artifact": rel_parquet_path,
+            "generator": f"src.features.build_features(sales_clean, returns_clean, cutoff='{as_of_str}', lookback_days={lookback})",
+            "as_of": as_of_str,
+            "lookback_days": lookback,
+            "window_start": (cutoff - pd.Timedelta(days=lookback)).strftime("%Y-%m-%d"),
+            "n_customers": int(len(df)),
+            "n_columns": int(df.shape[1]),
+            "columns": list(df.columns),
+            "source_sales_sha256": _sha256_file(sales_path),
+            "source_returns_sha256": _sha256_file(returns_path),
+            "output_sha256": _sha256_file(feat_path),
+        }
+        with open(output_dir / prov_filename, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(provenance, f, indent=2)
+            f.write("\n")
+        return df
+
+    if not feat_path.is_file():
+        raise FileNotFoundError(
+            f"Neither cleaned parquets nor {feat_path} found to run monitoring analysis."
+        )
+    return pd.read_parquet(feat_path)
+
+
 def run_phase_a(
     root: Path = PROJECT_ROOT,
     output_dir: Path | None = None,
@@ -55,57 +102,35 @@ def run_phase_a(
         output_dir = root / "data" / "processed" / "monitoring"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    deploy_feat_path = (
-        root / "data" / "processed" / "features" / "features_deploy_2011-12-10_270d.parquet"
-    )
+    lookback = int(config.pipeline.windows.lookback_days)
     sales_path = config.pipeline.paths.resolve("sales_clean", root)
     returns_path = config.pipeline.paths.resolve("returns_clean", root)
 
-    # 1. Build or load 270d deployment features as of 2011-12-10
-    if rebuild_deploy_features and sales_path.is_file() and returns_path.is_file():
-        sales_clean = pd.read_parquet(sales_path)
-        returns_clean = pd.read_parquet(returns_path)
-        cutoff = pd.Timestamp("2011-12-10 00:00:00")
-        lookback = int(config.pipeline.windows.lookback_days)
+    # 1. Build or load 270d deployment (2011-12-10) and season-matched reference (2010-12-10) cohorts
+    deploy_df = _build_or_load_270d_cohort(
+        root=root,
+        output_dir=output_dir,
+        as_of_str="2011-12-10",
+        rel_parquet_path="data/processed/features/features_deploy_2011-12-10_270d.parquet",
+        prov_filename="features_deploy_2011-12-10_270d_provenance.json",
+        lookback=lookback,
+        sales_path=sales_path,
+        returns_path=returns_path,
+        rebuild=rebuild_deploy_features,
+    )
+    ref_dec10_df = _build_or_load_270d_cohort(
+        root=root,
+        output_dir=output_dir,
+        as_of_str="2010-12-10",
+        rel_parquet_path="data/processed/features/features_ref_2010-12-10_270d.parquet",
+        prov_filename="features_ref_2010-12-10_270d_provenance.json",
+        lookback=lookback,
+        sales_path=sales_path,
+        returns_path=returns_path,
+        rebuild=rebuild_deploy_features,
+    )
 
-        deploy_df = build_features(
-            sales_clean,
-            returns_clean,
-            cutoff=cutoff,
-            lookback_days=lookback,
-        )
-        deploy_feat_path.parent.mkdir(parents=True, exist_ok=True)
-        deploy_df.to_parquet(deploy_feat_path, index=True)
-
-        provenance = {
-            "artifact": "data/processed/features/features_deploy_2011-12-10_270d.parquet",
-            "generator": "src.features.build_features(sales_clean, returns_clean, cutoff='2011-12-10', lookback_days=270)",
-            "as_of": "2011-12-10",
-            "lookback_days": lookback,
-            "window_start": (cutoff - pd.Timedelta(days=lookback)).strftime("%Y-%m-%d"),
-            "n_customers": int(len(deploy_df)),
-            "n_columns": int(deploy_df.shape[1]),
-            "columns": list(deploy_df.columns),
-            "source_sales_sha256": _sha256_file(sales_path),
-            "source_returns_sha256": _sha256_file(returns_path),
-            "output_sha256": _sha256_file(deploy_feat_path),
-        }
-        with open(
-            output_dir / "features_deploy_2011-12-10_270d_provenance.json",
-            "w",
-            encoding="utf-8",
-            newline="\n",
-        ) as f:
-            json.dump(provenance, f, indent=2)
-            f.write("\n")
-    else:
-        if not deploy_feat_path.is_file():
-            raise FileNotFoundError(
-                f"Neither cleaned parquets nor {deploy_feat_path} found to run monitoring analysis."
-            )
-        deploy_df = pd.read_parquet(deploy_feat_path)
-
-    # 2. Feature Drift: Deploy vs Test, Deploy vs Train, and Test vs Train (Phase 3 parity check)
+    # 2. Feature Drift: Deploy vs Test, Deploy vs Train, Test vs Train (Phase 3), Deploy vs Dec 2010 (Season-matched)
     train_df = pd.read_parquet(config.pipeline.paths.resolve("features_train", root))
     test_df = pd.read_parquet(config.pipeline.paths.resolve("features_test", root))
 
@@ -118,8 +143,12 @@ def run_phase_a(
     drift_test_vs_train = compute_feature_drift_table(
         train_df, test_df, ref_label="train_2010-09-10", cur_label="test_2011-09-10"
     )
+    drift_season_matched = compute_feature_drift_table(
+        ref_dec10_df, deploy_df, ref_label="ref_2010-12-10_270d", cur_label="deploy_2011-12-10_270d"
+    )
     feature_drift_df = pd.concat(
-        [drift_vs_test, drift_vs_train, drift_test_vs_train], ignore_index=True
+        [drift_vs_test, drift_vs_train, drift_test_vs_train, drift_season_matched],
+        ignore_index=True,
     )
     feature_drift_df.to_csv(
         output_dir / "feature_drift_report.csv", index=False, lineterminator="\n"
