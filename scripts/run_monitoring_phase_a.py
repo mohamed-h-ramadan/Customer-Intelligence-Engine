@@ -105,7 +105,7 @@ def run_phase_a(
             )
         deploy_df = pd.read_parquet(deploy_feat_path)
 
-    # 2. Feature Drift: Deploy (2011-12-10, 270d) vs Test (2011-09-10) & Train (2010-09-10)
+    # 2. Feature Drift: Deploy vs Test, Deploy vs Train, and Test vs Train (Phase 3 parity check)
     train_df = pd.read_parquet(config.pipeline.paths.resolve("features_train", root))
     test_df = pd.read_parquet(config.pipeline.paths.resolve("features_test", root))
 
@@ -115,7 +115,12 @@ def run_phase_a(
     drift_vs_train = compute_feature_drift_table(
         train_df, deploy_df, ref_label="train_2010-09-10", cur_label="deploy_2011-12-10_270d"
     )
-    feature_drift_df = pd.concat([drift_vs_test, drift_vs_train], ignore_index=True)
+    drift_test_vs_train = compute_feature_drift_table(
+        train_df, test_df, ref_label="train_2010-09-10", cur_label="test_2011-09-10"
+    )
+    feature_drift_df = pd.concat(
+        [drift_vs_test, drift_vs_train, drift_test_vs_train], ignore_index=True
+    )
     feature_drift_df.to_csv(
         output_dir / "feature_drift_report.csv", index=False, lineterminator="\n"
     )

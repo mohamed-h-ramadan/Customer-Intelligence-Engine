@@ -92,7 +92,7 @@ def test_monitoring_report_generation_smoke(tmp_path):
     from run_monitoring_phase_a import run_phase_a
 
     results = run_phase_a(root=root, output_dir=tmp_path, rebuild_deploy_features=False)
-    assert len(results["feature_drift"]) == 50
+    assert len(results["feature_drift"]) == 75
     assert len(results["prediction_drift"]) == 3
 
     expected_files = [

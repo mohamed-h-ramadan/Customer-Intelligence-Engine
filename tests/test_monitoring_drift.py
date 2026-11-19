@@ -109,3 +109,23 @@ def test_feature_drift_table_structure():
     assert len(tbl) == 25
     assert (tbl["ks_bonferroni_p"] >= tbl["ks_pvalue"]).all()
     assert (tbl["ks_bonferroni_p"] <= 1.0).all()
+
+
+def test_phase3_train_vs_test_drift_exact_parity():
+    """Verify test_2011-09-10 vs train_2010-09-10 in feature_drift_report.csv matches Phase 3 (0/25 flagged, max PSI 0.0199)."""
+    root = get_project_root()
+    drift_path = root / "data" / "processed" / "monitoring" / "feature_drift_report.csv"
+    df = pd.read_csv(drift_path)
+
+    sub = df[df["comparison"] == "test_2011-09-10 vs train_2010-09-10"].reset_index(drop=True)
+    assert len(sub) == 25
+
+    # Phase 3 flagging rule: PSI >= 0.10 or (KS >= 0.05 and p < 0.01) -> 0 / 25 flagged
+    phase3_flagged = (sub["psi"] >= 0.10) | ((sub["ks_stat"] >= 0.05) & (sub["ks_pvalue"] < 0.01))
+    assert int(phase3_flagged.sum()) == 0
+    assert (sub["psi_status"] == "OK").all()
+
+    # Exact max PSI: 0.0199 (tenure_days_in_window)
+    max_row = sub.loc[sub["psi"].idxmax()]
+    assert max_row["feature"] == "tenure_days_in_window"
+    assert round(float(max_row["psi"]), 4) == pytest.approx(0.0199, abs=1e-4)
