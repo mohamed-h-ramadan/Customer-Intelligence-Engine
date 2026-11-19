@@ -98,13 +98,60 @@ def build_backtest_report(
         ("repeat_vs_single_invoice", "purchase_cadence"),
         ("uk_vs_export", "geography"),
     ]:
+        # 1. Champion (Tweedie) + Heuristic Run-Rate baseline summary
         tbl = compute_slice_error_table(
             joined,
             group_col=group_col,
             y_true_col="target",
             y_pred_col="pred_frozen_tweedie",
             baseline_col="pred_run_rate",
-        ).reset_index()
+        )
+        # 2. Full metric suite for Calibrated Run-Rate using canonical src.clv.compute_slice_error_table
+        cal_tbl = compute_slice_error_table(
+            joined,
+            group_col=group_col,
+            y_true_col="target",
+            y_pred_col="pred_calibrated_run_rate",
+            baseline_col=None,
+            sort_by=None,
+        )
+        # 3. Remaining Run-Rate columns (medae, spearman, normalized_gini, pred_sum_gbp, pred_mean_gbp, mean_bias)
+        rr_tbl = compute_slice_error_table(
+            joined,
+            group_col=group_col,
+            y_true_col="target",
+            y_pred_col="pred_run_rate",
+            baseline_col=None,
+            sort_by=None,
+        )
+        model_metric_cols = [
+            "pred_sum_gbp",
+            "pred_mean_gbp",
+            "total_rev_error_pct",
+            "mean_bias_pred_minus_true",
+            "mae",
+            "medae",
+            "rmse",
+            "spearman",
+            "normalized_gini",
+        ]
+        for col_name in model_metric_cols:
+            out_col = (
+                "cal_rr_rev_err_pct" if col_name == "total_rev_error_pct" else f"cal_rr_{col_name}"
+            )
+            tbl[out_col] = cal_tbl.loc[tbl.index, col_name]
+
+        for col_name in [
+            "pred_sum_gbp",
+            "pred_mean_gbp",
+            "mean_bias_pred_minus_true",
+            "medae",
+            "spearman",
+            "normalized_gini",
+        ]:
+            tbl[f"run_rate_{col_name}"] = rr_tbl.loc[tbl.index, col_name]
+
+        tbl = tbl.reset_index()
         tbl.insert(0, "slice_dimension", dim_name)
         slice_frames.append(tbl)
     extra_slices_df = pd.concat(slice_frames, ignore_index=True)

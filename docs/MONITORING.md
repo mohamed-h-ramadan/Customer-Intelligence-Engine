@@ -76,14 +76,15 @@ All statistical thresholds below are conventional starting baselines (*initial, 
 *Source Artifacts*: [`data/processed/monitoring/backtest_report_2011-09-10.json`](../data/processed/monitoring/backtest_report_2011-09-10.json), [`data/processed/monitoring/backtest_decile_calibration.csv`](../data/processed/monitoring/backtest_decile_calibration.csv), [`data/processed/monitoring/backtest_cohort_slices.csv`](../data/processed/monitoring/backtest_cohort_slices.csv), and persisted CSVs under `data/processed/clv/`.
 
 - **Aggregate Metrics & 95% CIs**: Exact parity with `test_metrics_with_95ci.csv` & `calibrated_run_rate_test_metrics_with_95ci.csv` (e.g., Tweedie Total Rev Error `-13.45%` `[-23.47%, -1.44%]`, MAE `£600.1`; Calibrated Run-Rate Rev Error `-10.61%` `[-18.74%, -0.20%]`, MAE `£564.5`).
-- **Whale Concentration Coincidence**:
+- **Whale Concentration Coincidence** *(Note: "whale" slices are defined **ex post** from the actual holdout `target` — this is a post-hoc diagnostic slice, NOT a pre-registered decision slice)*:
   - **Top-5 by actual 90d spend**: `[18102, 17450, 14646, 14911, 14096]` (`17.26%` of total spend).
   - **Top-5 by Tweedie squared error**: `[18102, 17450, 14096, 14646, 14911]` (`84.06%` of total SSE).
   - **Coincidence**: Identical **as sets** (`True`), different **rank order** (`False` — customer `14096` jumps from #5 spend [`£53,054.54`] to #3 squared error because Tweedie predicted `£221.71`).
-- **Sub-Cohort Slices**:
-  - `Core Non-Whales (n=3,219)`: Tweedie achieves `-0.96%` total revenue error (vs Run-Rate `-31.17%`).
-  - `Repeat (n=1,894)` vs `Single-Invoice (n=1,330)`: Tweedie `-16.71%` vs `+10.62%` revenue error (`61.80%` zero future spend among single-invoice buyers).
-  - `UK (n=2,899)` vs `Export (n=325)`: Tweedie `-14.94%` (`Gini 0.7519`) vs `-6.10%` (`Gini 0.8900`).
+- **Sub-Cohort Slices (3-Way Fair Model Comparison via `backtest_cohort_slices.csv`)**:
+  - `Core Non-Whales (n=3,219)` *(ex-post diagnostic slice)*: Tweedie `-0.96%` rev error (`RMSE £1,241.49`) vs Calibrated Run-Rate `-1.75%` (`RMSE £1,347.52`) vs Heuristic Run-Rate `-31.17%` (`RMSE £1,259.83`).
+  - `Top-5 Actual Whales (n=5)` *(ex-post diagnostic slice)*: Tweedie `-73.30%` rev error (`RMSE £72,350.22`) vs Calibrated Run-Rate `-53.04%` (`RMSE £52,287.24`) vs Heuristic Run-Rate `-67.10%` (`RMSE £63,304.63`).
+  - `Repeat (n=1,894)` vs `Single-Invoice (n=1,330)`: Repeat Tweedie `-16.71%` vs Calibrated Run-Rate `-8.36%` vs Heuristic Run-Rate `-35.81%`; Single-Invoice Tweedie `+10.62%` vs Calibrated Run-Rate `-27.18%` vs Heuristic Run-Rate `-48.99%` (`61.80%` zero future spend).
+  - `UK (n=2,899)` vs `Export (n=325)`: UK Tweedie `-14.94%` vs Calibrated Run-Rate `-13.50%` vs Heuristic Run-Rate `-39.41%`; Export Tweedie `-6.10%` vs Calibrated Run-Rate `+3.65%` vs Heuristic Run-Rate `-27.39%`.
 
 ---
 

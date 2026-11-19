@@ -62,6 +62,35 @@ def test_backtest_report_matches_persisted_csvs():
     rep_seg_df = pd.DataFrame(report["segment_slices_persisted"])
     pd.testing.assert_frame_equal(rep_seg_df, exp_seg_df)
 
+    # 5. Cohort slices include symmetric Calibrated Run-Rate and Heuristic Run-Rate columns
+    slices_df = pd.read_csv(mon_dir / "backtest_cohort_slices.csv")
+    assert set(slices_df["slice_dimension"]) == {
+        "whale_vs_non_whale",
+        "repeat_vs_single_invoice",
+        "uk_vs_export",
+    }
+    for prefix in ["", "cal_rr_", "run_rate_"]:
+        for mcol in [
+            "pred_sum_gbp",
+            "pred_mean_gbp",
+            "mae",
+            "medae",
+            "rmse",
+            "spearman",
+            "normalized_gini",
+        ]:
+            col_name = f"{prefix}{mcol}"
+            assert col_name in slices_df.columns, f"Missing slice column {col_name}"
+    assert "cal_rr_rev_err_pct" in slices_df.columns
+    assert "run_rate_rev_err_pct" in slices_df.columns
+
+    # Verify Core Non-Whales slice matches persisted tweedie_rmse_excl_top5_gbp
+    core_row = slices_df[slices_df["slice"] == "Core Non-Whales (n=3219)"].iloc[0]
+    persisted_excl5 = float(
+        exp_whale_df.loc[exp_whale_df["metric"] == "tweedie_rmse_excl_top5_gbp", "value"].iloc[0]
+    )
+    assert np.isclose(core_row["rmse"], persisted_excl5, atol=1e-6)
+
 
 def test_prediction_and_segment_mix_drift_artifacts():
     """Verify prediction drift covers all 3 models and segment mix sums to 100%."""
