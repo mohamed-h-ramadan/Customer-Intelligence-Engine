@@ -56,6 +56,14 @@ jobs:
           path: coverage.xml
           retention-days: 14
 
+      - name: Upload Retraining Parity Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retrain-parity-report
+          path: retrain_parity_report.json
+          retention-days: 14
+
   docker-smoke:
     name: Build & Smoke Test Container
     runs-on: ubuntu-latest
