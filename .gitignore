@@ -127,3 +127,9 @@ data/processed/segmentation/*
 # CLV: whitelist holdout evaluation artifacts
 !data/processed/clv/*
 
+
+# Local AI assistant folders (may contain configs, keys, chat history)
+.continue/
+.gemini/
+.cursor/
+.claude/
