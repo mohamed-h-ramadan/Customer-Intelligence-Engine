@@ -16,14 +16,17 @@
 
 ---
 
-## 2. Validated Regime Rule (Proposed — Pending Approval)
+## 2. Validated Regime Rule (Approved Rule — API Integration Pending Step 6 Refactor)
 
 - **Limitation of Current Runtime Validation ([src/cie/core/validation.py](../src/cie/core/validation.py))**:
-  - Currently checks `ts.month in [9, 10, 11, 12]`, which conflates prediction horizon months with cutoff months. Passing `as_of=2011-11-01` or `2011-12-10` emits zero seasonal warnings (`[[]]`) despite forecasting outside Q4.
-- **Proposed Horizon-Overlap Rule ([src/cie/monitoring/regime.py](../src/cie/monitoring/regime.py), API untouched)**:
-  - Requires `lookback_days == 270`, `horizon_days == 90`, and **$\ge 80\%$ horizon overlap** ($\ge 72/90$ days, equivalent to `|as_of - Sep 10| <= 18 days`: Aug 23–Sep 28) with the annual validated horizon `[Sep 10, Dec 9)`.
+  - Currently checks `ts.month in [9, 10, 11, 12]`, which conflates prediction horizon months with cutoff months. Passing `as_of=2011-12-10` returns `[[]]` (`list[list[str]]` — one empty warning list `[]` for the 1 input customer row), meaning **zero warnings** are emitted even though `[2011-12-10, 2012-03-09)` has `0/90` (`0%`) overlap with `[Sep 10, Dec 9)`.
+- **Integer-Day Horizon-Overlap Rule ([src/cie/monitoring/regime.py](../src/cie/monitoring/regime.py), API untouched)**:
+  - Requires `lookback_days == 270`, `horizon_days == 90`, and **`overlap_days >= 76`** ($\ge 76/90$ days overlapping `[Sep 10, Dec 9)`, mathematically equivalent to `|as_of - Sep 10| <= 14 days`: Aug 27–Sep 24).
+  - **Judgment-Call Caveat**: This $\pm 14$-day (`overlap_days >= 76`) tolerance is an operational **judgment call**. Only exact `Sep 10` cutoffs (`2010-09-10` and `2011-09-10`) were empirically validated; **no empirical support exists for other offsets.**
   - Evaluation across test dates:
     - `2011-09-10`: `90/90` days (`100.0%`) -> `in_regime = True`
+    - `2011-09-24` (`+14d`): `76/90` days -> `in_regime = True`
+    - `2011-09-25` (`+15d`): `75/90` days -> `in_regime = False`
     - `2011-11-01`: `38/90` days (`42.2%`) -> `in_regime = False` (52 days post-Dec 9)
     - `2011-12-10`: `0/90` days (`0.0%`) -> `in_regime = False` (forecasts Dec 10–Mar 9)
 
@@ -37,7 +40,7 @@ All statistical thresholds below are conventional starting baselines (*initial, 
 | :--- | :--- | :--- | :--- | :--- |
 | **Feature & Prediction Drift** | Population Stability Index (PSI) | `>= 0.10` | `>= 0.25` | 10 quantile bins fit on reference (`expected`); exact unique categories for binary/low-cardinality features (`len(edges) <= 2`); `1e-6` floor. |
 | **Distribution Shift Significance** | Two-sample Kolmogorov-Smirnov (KS) | `p_bonf < 0.01` | `p_bonf < 0.01` & `PSI >= 0.10` | **Multiple-testing caveat**: Testing ~25 correlated numeric features simultaneously inflates false positives; Bonferroni correction (`min(1.0, p * 25)`) controls FWER, and at large $N > 3,200$ KS detects small shifts (`KS ~ 0.05–0.07`) even when `PSI < 0.03`. |
-| **Out-of-Regime Share** | Share of scored requests with `in_regime == False` | `> 5%` | `> 20%` | Flags non-Q4 seasonality (`overlap < 80%`) or `lookback_days != 270`. |
+| **Out-of-Regime Share** | Share of scored requests with `in_regime == False` | `> 5%` | `> 20%` | Flags non-Q4 seasonality (`overlap_days < 76`) or `lookback_days != 270` or `horizon_days != 90`. |
 | **Backtest Calibration Error** | Cohort MAE or Aggregate Total Revenue Error | Near 95% CI boundary | **Outside pre-registered 95% CI** | Checked at $T + 90\text{d}$ (`test_metrics_with_95ci.csv` / `calibrated_run_rate_test_metrics_with_95ci.csv`). |
 
 ---
@@ -90,7 +93,7 @@ All statistical thresholds below are conventional starting baselines (*initial, 
 | :--- | :--- | :--- | :--- |
 | **Core Feature Drift Alert** | `PSI >= 0.25` on `>= 2` core non-seasonal features (`monetary`, `frequency`, `aov`, `is_uk`) | Audit upstream ETL schema (`sales_clean` row accounting) and currency/pricing changes | **Investigate** pipeline first; **Retrain** pipeline if underlying customer behavior shifted permanently |
 | **Prediction Drift Alert** | `PSI >= 0.25` across champion or run-rate columns, or zero/near-zero share shifts `> 5 pp` | Cross-check against segment-mix shift and recent whale composition | **Investigate** scoring cohort mix; if persistent with degrading backtest, **Retrain** |
-| **High Out-of-Regime Traffic** | Out-of-regime requests (`overlap < 80%` or `lookback != 270d`) `> 20%` of traffic | Inspect `as_of` cutoff dates and API caller configurations | **Block Q4 calibrated predictions / Emit Regime Warnings**; calibrate/train a season-specific or multi-quarter model before serving off-season |
+| **High Out-of-Regime Traffic** | Out-of-regime requests (`overlap_days < 76` or `lookback != 270d` or `horizon != 90d`) `> 20%` of traffic | Inspect `as_of` cutoff dates and API caller configurations | **Block Q4 calibrated predictions / Emit Regime Warnings**; calibrate/train a season-specific or multi-quarter model before serving off-season |
 | **Lagging Backtest Degradation** | Backtest Aggregate Revenue Error or MAE falls outside pre-registered 95% CI, while ranking (`Gini` / `Spearman`) remains stable | Check expansion factor shift ($y / \text{run\_rate}$) across latest closed 90d window | **Recalibrate** the run-rate multiplier (`calibrated_run_rate`) on recent training windows |
 | **Lagging Ranking Collapse** | Backtest Normalized Gini or Top-10% Capture falls below lower 95% CI bound | Run permutation feature importance & slice diagnostics (`segment`, `repeat` vs `single`) | **Retrain** CLV models and re-run CV selection protocol |
 

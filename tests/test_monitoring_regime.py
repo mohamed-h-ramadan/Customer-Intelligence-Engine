@@ -1,4 +1,4 @@
-"""Known-answer tests for cie.monitoring.regime horizon-overlap logic."""
+"""Known-answer tests for cie.monitoring.regime integer-day horizon-overlap logic."""
 
 from datetime import date
 
@@ -11,10 +11,11 @@ from cie.monitoring.regime import assess_regime
 def test_validated_cutoffs_exact_100_percent_overlap():
     """Exact Sep 10 cutoffs must yield 90/90 overlap days and in_regime=True."""
     for dt in ["2010-09-10", "2011-09-10", date(2012, 9, 10), pd.Timestamp("2011-09-10")]:
-        res = assess_regime(as_of=dt, lookback_days=270)
+        res = assess_regime(as_of=dt, lookback_days=270, horizon_days=90)
         assert res.overlap_days == 90
         assert res.overlap_fraction == pytest.approx(1.0)
         assert res.lookback_in_regime is True
+        assert res.horizon_in_regime is True
         assert res.seasonal_in_regime is True
         assert res.in_regime is True
 
@@ -41,37 +42,45 @@ def test_out_of_regime_q4_and_winter_cutoffs():
     assert jun.in_regime is False
 
 
-def test_horizon_overlap_80_percent_boundary():
-    """Boundary check: 72/90 days (0.80, +/- 18d from Sep 10) is in-regime; 71/90 is not."""
-    # 18 days after Sep 10 -> Sep 28 -> 72 days overlap (0.80)
-    assert assess_regime("2011-09-28").overlap_days == 72
-    assert assess_regime("2011-09-28").in_regime is True
+def test_integer_day_boundary_76_vs_75_days():
+    """Boundary check: offset <= 14d (76/90 overlap) is True; offset >= 15d (75/90) is False."""
+    # +14 days after Sep 10 -> Sep 24 -> 76 days overlap -> in_regime=True
+    plus_14 = assess_regime("2011-09-24")
+    assert plus_14.overlap_days == 76
+    assert plus_14.in_regime is True
 
-    # 19 days after Sep 10 -> Sep 29 -> 71 days overlap (0.7889)
-    assert assess_regime("2011-09-29").overlap_days == 71
-    assert assess_regime("2011-09-29").in_regime is False
+    # +15 days after Sep 10 -> Sep 25 -> 75 days overlap -> in_regime=False
+    plus_15 = assess_regime("2011-09-25")
+    assert plus_15.overlap_days == 75
+    assert plus_15.in_regime is False
 
-    # 18 days before Sep 10 -> Aug 23 -> 72 days overlap (0.80)
-    assert assess_regime("2011-08-23").overlap_days == 72
-    assert assess_regime("2011-08-23").in_regime is True
+    # -14 days before Sep 10 -> Aug 27 -> 76 days overlap -> in_regime=True
+    minus_14 = assess_regime("2011-08-27")
+    assert minus_14.overlap_days == 76
+    assert minus_14.in_regime is True
 
-    # 19 days before Sep 10 -> Aug 22 -> 71 days overlap
-    assert assess_regime("2011-08-22").overlap_days == 71
-    assert assess_regime("2011-08-22").in_regime is False
+    # -15 days before Sep 10 -> Aug 26 -> 75 days overlap -> in_regime=False
+    minus_15 = assess_regime("2011-08-26")
+    assert minus_15.overlap_days == 75
+    assert minus_15.in_regime is False
 
 
-def test_wrong_lookback_and_invalid_inputs():
-    """Incorrect lookback or invalid arguments behave explicitly."""
+def test_wrong_lookback_horizon_and_invalid_inputs():
+    """Incorrect lookback/horizon or invalid arguments behave explicitly."""
     bad_lb = assess_regime("2011-09-10", lookback_days=180)
     assert bad_lb.seasonal_in_regime is True
     assert bad_lb.lookback_in_regime is False
     assert bad_lb.in_regime is False
 
+    bad_hz = assess_regime("2011-09-10", horizon_days=60, min_overlap_days=50)
+    assert bad_hz.horizon_in_regime is False
+    assert bad_hz.in_regime is False
+
     with pytest.raises(ValueError, match="horizon_days"):
         assess_regime("2011-09-10", horizon_days=0)
 
-    with pytest.raises(ValueError, match="min_overlap_fraction"):
-        assess_regime("2011-09-10", min_overlap_fraction=1.5)
+    with pytest.raises(ValueError, match="min_overlap_days"):
+        assess_regime("2011-09-10", horizon_days=90, min_overlap_days=91)
 
     with pytest.raises(TypeError, match="Unsupported as_of"):
         assess_regime(12345)  # type: ignore[arg-type]

@@ -1,11 +1,17 @@
 """Pure horizon-overlap regime assessment for CLV monitoring.
 
 The Champion (Tweedie GLM) and Calibrated Run-Rate multiplier (1.42746205196053)
-were validated strictly on the 90-day horizon [Sep 10, Dec 9) with a 270-day lookback
-window (cutoffs 2010-09-10 and 2011-09-10).
+were validated strictly at exact Sep 10 cutoffs (2010-09-10 and 2011-09-10) over
+the 90-day horizon [Sep 10, Dec 9) with a 270-day lookback window.
 
-This module defines the proposed horizon-overlap regime rule without altering
-existing runtime validation (src/cie/core/validation.py) until approved.
+Judgment-call tolerance note:
+    Defaulting `min_overlap_days = 76` (equivalent to |as_of - Sep 10| <= 14 days
+    for a 90-day horizon) is an operational judgment call to permit weekly/bi-weekly
+    September batch runs. No empirical validation exists for cutoffs other than
+    exact Sep 10.
+
+This module defines the regime rule as a pure function without altering existing
+runtime validation (src/cie/core/validation.py) until approved.
 """
 
 from dataclasses import asdict, dataclass
@@ -16,7 +22,7 @@ VALIDATED_CUTOFF_MONTH = 9
 VALIDATED_CUTOFF_DAY = 10
 VALIDATED_LOOKBACK_DAYS = 270
 VALIDATED_HORIZON_DAYS = 90
-DEFAULT_MIN_OVERLAP_FRACTION = 0.80
+DEFAULT_MIN_OVERLAP_DAYS = 76
 
 
 @dataclass(frozen=True)
@@ -30,8 +36,9 @@ class RegimeAssessment:
     validated_horizon_end: str
     overlap_days: int
     overlap_fraction: float
-    min_overlap_fraction: float
+    min_overlap_days: int
     lookback_in_regime: bool
+    horizon_in_regime: bool
     seasonal_in_regime: bool
     in_regime: bool
     reason: str
@@ -57,25 +64,25 @@ def assess_regime(
     as_of: str | date | datetime,
     lookback_days: int = VALIDATED_LOOKBACK_DAYS,
     horizon_days: int = VALIDATED_HORIZON_DAYS,
-    min_overlap_fraction: float = DEFAULT_MIN_OVERLAP_FRACTION,
+    min_overlap_days: int = DEFAULT_MIN_OVERLAP_DAYS,
 ) -> RegimeAssessment:
     """Evaluate whether [as_of, as_of + horizon_days) is within the validated [Sep 10, Dec 9) regime.
 
     Args:
         as_of: Scoring cutoff date.
-        lookback_days: Lookback window used to compute customer features (must equal 270 to pass).
-        horizon_days: Forward forecasting horizon in days (must be > 0).
-        min_overlap_fraction: Minimum fraction of [as_of, as_of + horizon_days) overlapping
-            with the annual validated horizon [Sep 10, Dec 9) (default: 0.80 -> >= 72/90 days,
-            equivalent to |as_of - Sep 10| <= 18 days for a 90-day horizon).
+        lookback_days: Lookback window used to compute customer features (must equal 270).
+        horizon_days: Forward forecasting horizon in days (must equal 90 to be in-regime).
+        min_overlap_days: Minimum integer overlap days required with the annual validated
+            [Sep 10, Dec 9) window (default: 76 days, i.e., |as_of - Sep 10| <= 14 days).
+            Note: this 14-day tolerance is a judgment call; only exact Sep 10 cutoffs are validated.
 
     Returns:
-        RegimeAssessment with overlap metrics and boolean verdict.
+        RegimeAssessment with integer overlap days, overlap fraction, and boolean verdict.
     """
     if horizon_days <= 0:
         raise ValueError(f"horizon_days must be positive, got {horizon_days}")
-    if not (0.0 <= min_overlap_fraction <= 1.0):
-        raise ValueError(f"min_overlap_fraction must be in [0.0, 1.0], got {min_overlap_fraction}")
+    if not (0 <= min_overlap_days <= horizon_days):
+        raise ValueError(f"min_overlap_days must be in [0, {horizon_days}], got {min_overlap_days}")
 
     cutoff = _coerce_date(as_of)
     scoring_end = cutoff + timedelta(days=horizon_days)
@@ -85,7 +92,7 @@ def assess_regime(
     best_val_start = date(cutoff.year, VALIDATED_CUTOFF_MONTH, VALIDATED_CUTOFF_DAY)
     best_val_end = best_val_start + timedelta(days=VALIDATED_HORIZON_DAYS)
 
-    # Check adjacent years so Dec/Jan or Aug cutoffs resolve cleanly; break zero-overlap ties by nearest cutoff
+    # Check adjacent years so Dec/Jan or Aug cutoffs resolve cleanly; break ties by nearest cutoff
     for year in (cutoff.year - 1, cutoff.year, cutoff.year + 1):
         val_start = date(year, VALIDATED_CUTOFF_MONTH, VALIDATED_CUTOFF_DAY)
         val_end = val_start + timedelta(days=VALIDATED_HORIZON_DAYS)
@@ -104,7 +111,7 @@ def assess_regime(
     overlap_fraction = best_overlap / float(horizon_days)
     lookback_ok = lookback_days == VALIDATED_LOOKBACK_DAYS
     horizon_ok = horizon_days == VALIDATED_HORIZON_DAYS
-    seasonal_ok = overlap_fraction >= min_overlap_fraction
+    seasonal_ok = best_overlap >= min_overlap_days
     in_regime = bool(lookback_ok and horizon_ok and seasonal_ok)
 
     reasons = []
@@ -112,7 +119,7 @@ def assess_regime(
         reasons.append(
             f"Horizon [{cutoff.isoformat()}, {scoring_end.isoformat()}) overlaps "
             f"{best_overlap}/{horizon_days} days ({overlap_fraction:.1%}) with validated window "
-            f"[{best_val_start.isoformat()}, {best_val_end.isoformat()}), below threshold {min_overlap_fraction:.0%}."
+            f"[{best_val_start.isoformat()}, {best_val_end.isoformat()}), below min_overlap_days={min_overlap_days}."
         )
     if not lookback_ok:
         reasons.append(f"lookback_days={lookback_days} != validated {VALIDATED_LOOKBACK_DAYS}d.")
@@ -136,8 +143,9 @@ def assess_regime(
         validated_horizon_end=best_val_end.isoformat(),
         overlap_days=best_overlap,
         overlap_fraction=overlap_fraction,
-        min_overlap_fraction=min_overlap_fraction,
+        min_overlap_days=min_overlap_days,
         lookback_in_regime=lookback_ok,
+        horizon_in_regime=horizon_ok,
         seasonal_in_regime=seasonal_ok,
         in_regime=in_regime,
         reason=reason_str,
