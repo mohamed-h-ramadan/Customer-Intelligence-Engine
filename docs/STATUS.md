@@ -33,6 +33,8 @@
 ## 4. Git Commit History (`git log --oneline`)
 
 ```text
+0047b46 docs(monitoring): fix Section 5 decision table CIs, persistence, whales, data-quality, seasonal recalibration, and owners
+14c75c3 docs: regenerate STATUS.md after evidence gap fixes (120 tests, CI UNVERIFIED)
 e7b587c docs(monitoring): clarify Dec-to-Dec KS small shifts, shared customers, and rename PSI-only test
 1ec28c7 chore(monitoring): extract cohort bridge script for 596/425/300/1021/721 counts and cite in MONITORING.md
 b212a05 docs: regenerate STATUS.md (120 collected tests, CI coverage UNVERIFIED)
@@ -81,6 +83,4 @@ c10de79 ci: configure GitHub Actions workflow for linting, tests, docker smoke t
 a6481b6 feat(docker): add multi-stage Dockerfile, docker-compose with MLflow, and service smoke-test script
 a3a4c82 feat(api): implement versioned FastAPI service with health, model card, scoring, and backtest endpoints
 5981635 feat(core): implement framework-agnostic scoring core with regime validation and golden-file parity
-52c7868 feat(tracking): add MLflow experiment tracking and model registry with champion/challenger aliases
-23c6140 feat(pipeline): add reproducible CLI stages and Makefile with golden-file parity assertions
 ```
