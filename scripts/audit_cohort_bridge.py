@@ -22,7 +22,7 @@ def compute_cohort_bridge() -> dict[str, int]:
     test_ids = set(test_df.index)
     deploy_ids = set(deploy_df.index)
 
-    churned_out_ids = test_ids - deploy_ids
+    aged_out_of_window_ids = test_ids - deploy_ids
     entered_ids = deploy_ids - test_ids
 
     first_purchase = sales.groupby("Customer ID")["InvoiceDate"].min()
@@ -35,20 +35,20 @@ def compute_cohort_bridge() -> dict[str, int]:
 
     test_n = len(test_ids)
     deploy_n = len(deploy_ids)
-    churned_out = len(churned_out_ids)
+    aged_out_of_window = len(aged_out_of_window_ids)
     entered = len(entered_ids)
     new_buyers = len(new_buyer_ids)
     reactivated_lapsed = len(reactivated_lapsed_ids)
     net_delta = deploy_n - test_n
 
     assert entered == new_buyers + reactivated_lapsed
-    assert deploy_n == test_n - churned_out + entered
+    assert deploy_n == test_n - aged_out_of_window + entered
 
     return {
         "test_n": test_n,
         "deploy_n": deploy_n,
         "net_delta": net_delta,
-        "churned_out": churned_out,
+        "aged_out_of_window": aged_out_of_window,
         "entered": entered,
         "new_buyers": new_buyers,
         "reactivated_lapsed": reactivated_lapsed,
@@ -72,8 +72,8 @@ def main() -> None:
         "(net cohort headcount change: deploy_n - test_n)"
     )
     print(
-        f"churned_out        = {counts['churned_out']:,} "
-        "(in test 270d cohort, no purchase in [2011-03-15, 2011-12-10))"
+        f"aged_out_of_window = {counts['aged_out_of_window']:,} "
+        "(had a sale in the test lookback window but none in [2011-03-15, 2011-12-10); may return later, so NOT churn)"
     )
     print(
         f"entered            = {counts['entered']:,} "
@@ -89,7 +89,7 @@ def main() -> None:
     )
     print(
         f"IDENTITY CHECK     : {counts['deploy_n']:,} = "
-        f"{counts['test_n']:,} - {counts['churned_out']:,} + {counts['entered']:,} "
+        f"{counts['test_n']:,} - {counts['aged_out_of_window']:,} + {counts['entered']:,} "
         f"(and {counts['entered']:,} = {counts['new_buyers']:,} + {counts['reactivated_lapsed']:,}) -> VERIFIED"
     )
 
