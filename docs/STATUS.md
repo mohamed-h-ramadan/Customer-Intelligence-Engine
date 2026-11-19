@@ -33,6 +33,8 @@
 ## 4. Git Commit History (`git log --oneline`)
 
 ```text
+dab1784 refactor(monitoring): rename churned_out to aged_out_of_window with exact definition
+aa5b523 docs: regenerate STATUS.md after Section 5 persistence refinement
 b70b6f8 docs(monitoring): restrict persistence rule to leading triggers and clarify once-per-season manual backtest review
 202c571 docs: regenerate STATUS.md after MONITORING Section 5 fix
 0047b46 docs(monitoring): fix Section 5 decision table CIs, persistence, whales, data-quality, seasonal recalibration, and owners
@@ -81,6 +83,4 @@ e0b5408 feat(clv): persist calibrated run-rate test metrics with 95% CIs and lin
 d110e62 feat(ci): add deterministic metrics renderer and CI drift enforcement
 cf188f8 test(clv): add golden tests for run-rate, calibrated run-rate, and audit full-history vs 270d segmentation
 b123f57 test(clv): add metrics regression test suite asserting exact parity against Phase 4b artifacts
-c10de79 ci: configure GitHub Actions workflow for linting, tests, docker smoke test, and ghcr publishing
-a6481b6 feat(docker): add multi-stage Dockerfile, docker-compose with MLflow, and service smoke-test script
 ```
